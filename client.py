@@ -57,11 +57,21 @@ class Msg(Client):
                 pass
         return arr
     
-    def raw(self, content: str):
+    def raw(self, content: str, retryFlag=True):
         if 'face54' in content:
             content = content.replace('face54', '[CQ:face,id=54]')
-        return self.custom(self.data.se.get('user_id'), self.data.se.get('group_id'), content)
-        # return self.sendMsg(TextStatement(content))
+        
+        dataa = self.custom(self.data.se.get('user_id'), self.data.se.get('group_id'), content)
+        
+        if dataa.get('status') == 'failed' and self.data.se.get('post_type') == 'message':
+            if retryFlag:
+                self.raw('消息发送失败，尝试转图片发送...', retryFlag=False)
+                self.data.message = content
+                self.data.se['user_id'] = self.data.botSettings.get('myselfqn')
+                self.data.se['sender']['nickname'] = self.data.botSettings.get('name')
+                return self.image()
+        else:
+            return dataa.get('data').get('message_id')
     
     def channel(self):
         data = self.CallApi('send_guild_channel_msg', {'guild_id':self.data.se.get('guild_id'),'channel_id':self.data.se.get('channel_id'),'message':self.getParams()})
@@ -198,7 +208,7 @@ class Msg(Client):
         try:
             if dataa.get('status') == 'failed' and self.data.se.get('post_type') == 'message':
                 if self.retryFlag:
-                    self.raw('消息发送失败，尝试转图片发送...')
+                    self.raw('消息发送失败，尝试转图片发送...', retryFlag=False)
                     self.data.message = self.getRawText()
                     self.data.se['user_id'] = botSettings.get('myselfqn')
                     self.data.se['sender']['nickname'] = botSettings.get('name')

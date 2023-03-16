@@ -21,6 +21,7 @@ from statement.AtStatement import AtStatement
 from banwords import BanWords
 from commandListener import CommandListener
 from regex import Regex
+from logger import Logger
 from menu import Menu
 
 requests.adapters.DEFAULT_RETRIES = 5
@@ -560,6 +561,7 @@ def requestInit(se: dict, uuid: str, port: int):
     p(f'Struct was created.')
     
     pbf = PBF(struct)
+    logger = Logger(struct)
     regex = Regex(struct)
     client = Client(struct)
     banwords = BanWords(struct)
@@ -815,25 +817,29 @@ def requestInit(se: dict, uuid: str, port: int):
         if banwords.check(weijinFlag) == True and not only_for_uid:
             return 'OK.'
         
-        # 关键词回复
-        if settings != None:
-            kwFlag = 1 if settings.get('keywordReply') else 0
-        else:
-            kwFlag = 1
-        if kwFlag and not only_for_uid:
-            keywordlist = cache.get('keywordList').get(uuid)
-            for i in keywordlist:
-                replyFlag = False
-                if userCoin >= i.get('coin') and (i.get("qn") == 0 or gid == i.get("qn")):
-                    replyFlag = True
-                if replyFlag == True:
-                    replyKey = regex.replace(i.get('key'))
-                    if regex.pair(replyKey, message):
-                        regex.send(i.get('value'))
+        try:
+            # 关键词回复
+            if settings != None:
+                kwFlag = 1 if settings.get('keywordReply') else 0
+            else:
+                kwFlag = 1
+            if kwFlag and not only_for_uid:
+                keywordlist = cache.get('keywordList').get(uuid, [])
+                for i in keywordlist:
+                    replyFlag = False
+                    if userCoin >= i.get('coin') and (i.get("qn") == 0 or gid == i.get("qn")):
+                        replyFlag = True
+                    if replyFlag == True:
+                        replyKey = regex.replace(i.get('key'))
+                        if regex.pair(replyKey, message):
+                            regex.send(i.get('value'))
+        except Exception as e:
+            logger.warn(f'{traceback.format_exc()}')
         
         # 分类菜单
         for i in menu.getModedMenu():
-            if i.replace(' ', '') in message:
+            menuStr = i.replace(' ', '')
+            if message[0:len(menuStr)] == menuStr:
                 p(f'Send SingleMenu: {i}')
                 menu.sendSingleMenu(i)
         
