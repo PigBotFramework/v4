@@ -1,9 +1,9 @@
 import mysql, cache
 
 class ModelBase:
-    sql_update: str = "UPDATE `{}` _set {} WHERE {}"
+    sql_update: str = "UPDATE `{}` SET {} WHERE {}"
     sql_insert: str = "INSERT INTO `{}` ({}) VALUES {}"
-    sql_delete: str = "DELETE * FROM `{}` WHERE {}"
+    sql_delete: str = "DELETE FROM `{}` WHERE {}"
     sql_whereCase: str = ""
     sql_whereList: list = []
     
@@ -14,6 +14,7 @@ class ModelBase:
     cache = None
     map: list = []
     args: list = []
+    exists: bool = True
     
     format_insert: list = []
     format_update: list = []
@@ -48,10 +49,20 @@ class ModelBase:
         
         # 初始化数据
         self._getCol()
-        self._refresh()
-        
+        self._refresh(insertFlag=True, kwargs=kwargs)
+        self._refreshWhereCase()
+    
+    def _refreshWhereCase(self):
         # 生成where子句
+        self.sql_whereCase = ""
+        self.sql_whereList = []
+        
+        flag: bool = False
         for i in self.map:
+            if flag:
+                self.sql_whereCase += ", "
+            else:
+                flag = True
             self.sql_whereCase += "`{}` = %s".format(i)
             self.sql_whereList.append(self.args.get(i))
     
@@ -62,14 +73,35 @@ class ModelBase:
         return self.cache.get(key, *args, **kwargs)
     
     def _insert(self, **kwargs):
+        # 在缓存中新增
+        strr: str = ""
+        for i in self.map:
+            if kwargs.get(i) == None:
+                raise Exception("Key Not Found.")
+            strr += f"[{eval(str(kwargs.get(i)))}]"
+        exec(f"cache.cacheList{strr} = {eval(str(kwargs))}")
+        
+        self.cache = kwargs
+        self.args = kwargs
+        self._refreshWhereCase()
+        
+        # 更新到同步列表
         insertList: list = []
         for i in self.col:
-            insertList.append(kwargs.get(i))
+            insertList.append(kwargs.get(i.get('name')))
         self.format_insert.append(insertList)
         return self
     
     def _delete(self):
-        mysql.commonx(self.sql_delete.format(self.db_table, self.sql_whereCase), tuple(self.sql_whereList))
+        # 数据库删除
+        mysql.commonx(self.sql_delete.format(self._c(), self.sql_whereCase), tuple(self.sql_whereList))
+        
+        # 缓存删除
+        strr: str = ""
+        for i in self.map:
+            strr += f"[{eval(str(self.args.get(i)))}]"
+        exec(f"del cache.cacheList{strr}")
+        
         return self
     
     def _set(self, **kwargs):
@@ -80,6 +112,7 @@ class ModelBase:
             })
             
             # 修改缓存
+            '''
             _cache = cache.cacheList
             cacheList: list = []
             map: list = ["_db_table"]
@@ -101,20 +134,57 @@ class ModelBase:
                 listLength -= 1
             
             cache.cacheList = _cache
+            '''
+            
             self.cache[k] = v
+            
+            strr: str = ""
+            for i in self.map:
+                strr += f"[{eval(str(self.args.get(i)))}]"
+            exec(f"cache.cacheList{strr} = {eval(str(self.cache))}")
         return self
     
     def __insert(self):
-        pass
+        colname: str = ""
+        flag: bool = False
+        for i in self.col:
+            name = i.get('name')
+            if flag:
+                colname += ", "
+            else:
+                flag = True
+            colname += f"`{name}`"
+        
+        vs: str = ""
+        vsl: list = []
+        fflag: bool = False
+        for i in self.format_insert:
+            strr: str = ""
+            flag: bool = False
+            for l in i:
+                if flag:
+                    strr += ", "
+                else:
+                    flag = True
+                strr += "%s"
+            if fflag:
+                vs += ", "
+            else:
+                fflag = True
+            
+            vs += f"({strr})"
+            vsl += i
+        
+        mysql.commonx(self.sql_insert.format(self._c(), colname, vs), tuple(vsl))
         
     def __update(self):
         pass
     
     def _sync(self):
-        self._insert()
-        self._update()
+        self.__insert()
+        self.__update()
         
-    def _refresh(self):
+    def _refresh(self, insertFlag: bool = False, kwargs: dict = {}):
         self.cache = cache.get(self._c())
         
         # 初始化数据表
@@ -127,24 +197,28 @@ class ModelBase:
             _cache = self.cache
             self.cache = self.cache.get(self.args.get(i))
             if self.cache == None:
-                raise Exception("Key Not Found.")
+                if insertFlag:
+                    self._insert(**kwargs)
+                    self.exists = False
+                else:
+                    raise Exception("Key Not Found.")
             iter += 1
 
 class TestModel(ModelBase):
-    db_table = "botBotconfig"
-    map = ["uuid"]
+    db_table = "bot402ModReport"
+    map = ["qn"]
     
-    def name(self):
-        """
-        Test
-        """
+    def qn(self):
         return "test"
     
-    def httpurl(self):
-        """
-        HttpUrl
-        """
+    def au(self):
         return None
+    
+    def time(self):
+        pass
+    
+    def nickname(self):
+        pass
 
 def mapDict(ob, key: str):
     obDict = {}
@@ -154,11 +228,24 @@ def mapDict(ob, key: str):
     return obDict
 
 if __name__ == "__main__":
-    cache.connectSql('botBotconfig', 'SELECT * FROM `botBotconfig`', mapDict, 'uuid')
+    cache.connectSql('bot402ModReport', 'SELECT * FROM `bot402ModReport`', mapDict, 'qn')
     
-    model = TestModel(uuid="123456789")
-    print(model._get("name"))
-    model._set(name="123456")
-    print(model._get("name"))
-    model._set(secret="xxx")
-    print("\ncacheListb ", model.cache)
+    print(cache.cacheList)
+    
+    model = TestModel(qn=int(input("Please input UID > ")))
+    print(model.cache)
+    print(model._get("nickname"))
+    model._set(nickname="123456")
+    print(model._get("nickname"))
+    
+    model._insert(nickname="test", qn=int(input("> ")), au="az", time="time")
+    
+    print(cache.cacheList)
+    
+    model._insert(nickname="test", qn=int(input("> ")), au="az", time="time")._sync()
+    
+    print(cache.cacheList)
+    
+    model._delete()
+    
+    print(cache.cacheList)
