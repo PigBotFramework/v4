@@ -39,13 +39,9 @@ class ModelBase:
         return strr
     
     def _getTableName(self):
-        # TODO 测试时这里返回特殊字符串，生产使用请注释
-        return self.db_table.replace(self.db_perfix, "")
         return self.db_perfix + self.db_table
         
     def _c(self):
-        # TODO 测试时这里返回特殊字符串，生产使用请注释
-        return self.db_table.replace(self.db_perfix, "")
         return "db_" + self._getTableName()
     
     def _getCol(self):
@@ -66,7 +62,6 @@ class ModelBase:
     
     def __init__(self, **kwargs):
         self.args = kwargs
-        self.db_table = self.db_perfix + self.db_table
         
         # 初始化数据
         self._getCol()
@@ -108,7 +103,7 @@ class ModelBase:
         mysql.commonx(sql)
 
         self.cache = {}
-        cache.set(self._getTableName(), {})
+        cache.set(self._c(), {})
         
         sql = self.sql_select.format(self._getTableName())
         data = mysql.selectx(sql)
@@ -284,7 +279,8 @@ class ModelBase:
 # ============ DEBUG ============
 
 class TestModel(ModelBase):
-    db_table = "bot402ModReport"
+    db_table = "402ModReport"
+    db_perfix = "bot"
     map = ["qn"]
     format_createTable = ["PRIMARY KEY (`id`)"]
     
@@ -313,11 +309,4 @@ def mapDict(ob, key: str):
 if __name__ == "__main__":
     model = TestModel(qn=int(input("> ")), au="az")
     print(cache.cacheList)
-    # model._dropTable()
-    # model._createTable()
-    '''
-    print(model.cache)
-    print(model._get("nickname"))
-    model._set(nickname=input("> "))._sync()
-    print(model._get("nickname"))
-    '''
+    
