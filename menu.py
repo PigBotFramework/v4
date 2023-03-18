@@ -58,7 +58,7 @@ class Menu:
     def sendSingleMenu(self, mode: str):
         commandList = cache.get('commandModedList').get(mode)
         if commandList == None:
-            raise ValueException('Mode name not found')
+            raise Exception('Mode name not found')
         
         messageList = [
             FaceStatement(151),

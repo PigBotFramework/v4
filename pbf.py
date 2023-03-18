@@ -104,7 +104,7 @@ class PBF:
                             Statement("reply", id=self.data.se.get('message_id')),
                             TextStatement(message)
                         ).send()
-            except Exception as e:
+            except Exception:
                 pass
         
         threading.Thread(target=replyFunc).start()
@@ -121,7 +121,7 @@ class PBF:
             module = importlib.import_module(f'plugins.{className}')
             instance = getattr(module, className)(self.data)
             return getattr(instance, methodName)()
-        except Exception as e:
+        except Exception:
             self.logger.error(traceback.format_exc())
         
     def checkPromiseAndRun(self, i, echoFlag=False, senderFlag=False, content=None):

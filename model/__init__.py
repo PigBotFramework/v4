@@ -4,6 +4,9 @@ class ModelBase:
     sql_update: str = "UPDATE `{}` SET {} WHERE {}"
     sql_insert: str = "INSERT INTO `{}` ({}) VALUES {}"
     sql_delete: str = "DELETE FROM `{}` WHERE {}"
+    sql_createTable: str = "CREATE TABLE IF NOT EXISTS `{}`({})"
+    sql_dropTable: str = "DROP TABLE IF EXISTS `{}`"
+    sql_select: str = "SELECT * FROM `{}`"
     sql_whereCase: str = ""
     sql_whereList: list = []
     
@@ -15,11 +18,29 @@ class ModelBase:
     map: list = []
     args: list = []
     exists: bool = True
+    delFlag: bool = False
     
     format_insert: list = []
     format_update: list = []
+    format_delete: bool = False
+    format_createTable: list = []
+
+    def _getIndexStr(self, i):
+        strr: str = f"['{self._c()}']"
+        listt: list = self.map
+        dictOb = cache.cacheList
+        for l in listt:
+            strr += f"[{eval(str(i.get(l)))}]"
+            dictOb = dictOb.get(str(i.get(l)))
+            if dictOb == None:
+                exec(f"cache.cacheList{strr} = {'{}'}")
+                dictOb = {}
+            
+        return strr
     
     def _getTableName(self):
+        # TODO 测试时这里返回特殊字符串，生产使用请注释
+        return self.db_table.replace(self.db_perfix, "")
         return self.db_perfix + self.db_table
         
     def _c(self):
@@ -39,7 +60,7 @@ class ModelBase:
             self.col.append({
                 "desc": desc,
                 "name": name,
-                "default": default,
+                "default": f"`{name}` {default}",
                 "type": _type
             })
     
@@ -51,6 +72,10 @@ class ModelBase:
         self._getCol()
         self._refresh(insertFlag=True, kwargs=kwargs)
         self._refreshWhereCase()
+    
+    def __del__(self):
+        if not self.delFlag:
+            self._sync()
     
     def _refreshWhereCase(self):
         # 生成where子句
@@ -66,21 +91,49 @@ class ModelBase:
             self.sql_whereCase += "`{}` = %s".format(i)
             self.sql_whereList.append(self.args.get(i))
     
-    def _initTable(self):
+    def _createTable(self):
+        strr: str = ""
+        flag: bool = False
+        listt: list = self.col + self.format_createTable
+        for i in listt:
+            if flag:
+                strr += ", "
+            else:
+                flag = True
+            if isinstance(i, dict):
+                strr += i.get("default")
+            elif isinstance(i, str):
+                strr += i
+        sql = self.sql_createTable.format(self._getTableName(), strr)
+        mysql.commonx(sql)
+
+        self.cache = {}
+        cache.set(self._getTableName(), {})
+        
+        sql = self.sql_select.format(self._getTableName())
+        data = mysql.selectx(sql)
+        for i in data:
+            strr = self._getIndexStr(i)
+            exec(f"cache.cacheList{strr} = {eval(str(i))}")
+
         return self
     
+    def _dropTable(self):
+        mysql.commonx(self.sql_dropTable.format(self._getTableName()))
+        self.delFlag = True
+        del self
+        return None
+
     def _get(self, key: str, *args, **kwargs):
         return self.cache.get(key, *args, **kwargs)
     
     def _insert(self, **kwargs):
         # 在缓存中新增
-        strr: str = ""
-        for i in self.map:
-            if kwargs.get(i) == None:
-                raise Exception("Key Not Found.")
-            strr += f"[{eval(str(kwargs.get(i)))}]"
+        strr = self._getIndexStr(kwargs)
         exec(f"cache.cacheList{strr} = {eval(str(kwargs))}")
         
+        self.exists = True
+        self.delFlag = False
         self.cache = kwargs
         self.args = kwargs
         self._refreshWhereCase()
@@ -93,16 +146,21 @@ class ModelBase:
         return self
     
     def _delete(self):
-        # 数据库删除
-        mysql.commonx(self.sql_delete.format(self._c(), self.sql_whereCase), tuple(self.sql_whereList))
-        
         # 缓存删除
-        strr: str = ""
-        for i in self.map:
-            strr += f"[{eval(str(self.args.get(i)))}]"
+        strr = self._getIndexStr(self.args)
         exec(f"del cache.cacheList{strr}")
         
+        self.format_delete = True
+        
         return self
+    
+    def __delete(self):
+        # 数据库删除
+        if self.format_delete:
+            mysql.commonx(self.sql_delete.format(self._getTableName(), self.sql_whereCase), tuple(self.sql_whereList))
+            self.format_delete = False
+        else:
+            return False
     
     def _set(self, **kwargs):
         for k, v in kwargs.items():
@@ -145,6 +203,9 @@ class ModelBase:
         return self
     
     def __insert(self):
+        if not self.format_insert:
+            return False
+        
         colname: str = ""
         flag: bool = False
         for i in self.col:
@@ -161,7 +222,7 @@ class ModelBase:
         for i in self.format_insert:
             strr: str = ""
             flag: bool = False
-            for l in i:
+            for _ in i:
                 if flag:
                     strr += ", "
                 else:
@@ -175,21 +236,37 @@ class ModelBase:
             vs += f"({strr})"
             vsl += i
         
-        mysql.commonx(self.sql_insert.format(self._c(), colname, vs), tuple(vsl))
+        mysql.commonx(self.sql_insert.format(self._getTableName(), colname, vs), tuple(vsl))
         
     def __update(self):
-        pass
+        if not self.format_update:
+            return False
+        
+        strr: str = ""
+        vList: list = []
+        flag: bool = False
+        for i in self.format_update:
+            if flag:
+                strr += ", "
+            else:
+                flag = True
+            k, v = i.get("key"), i.get("value")
+            strr += f"`{k}` = %s"
+            vList.append(v)
+        sql = self.sql_update.format(self._getTableName(), strr, self.sql_whereCase)
+        mysql.commonx(sql, tuple(vList+self.sql_whereList))
     
     def _sync(self):
         self.__insert()
         self.__update()
+        self.__delete()
         
     def _refresh(self, insertFlag: bool = False, kwargs: dict = {}):
         self.cache = cache.get(self._c())
         
         # 初始化数据表
         if self.cache == None:
-            self._initTable()
+            self._createTable()
             
         # 获取具体cache
         iter = 0
@@ -204,21 +281,27 @@ class ModelBase:
                     raise Exception("Key Not Found.")
             iter += 1
 
+# ============ DEBUG ============
+
 class TestModel(ModelBase):
     db_table = "bot402ModReport"
     map = ["qn"]
+    format_createTable = ["PRIMARY KEY (`id`)"]
+    
+    def id(self):
+        return "INT(11) NOT NULL AUTO_INCREMENT"
     
     def qn(self):
-        return "test"
+        return "INT(11) NOT NULL COMMENT 'UID'"
     
     def au(self):
-        return None
+        return "VARCHAR(11) NOT NULL COMMENT 'AUID'"
     
     def time(self):
-        pass
+        return "VARCHAR(50) COMMENT '报名时间'"
     
     def nickname(self):
-        pass
+        return "VARCHAR(100) COMMENT '昵称'"
 
 def mapDict(ob, key: str):
     obDict = {}
@@ -228,24 +311,13 @@ def mapDict(ob, key: str):
     return obDict
 
 if __name__ == "__main__":
-    cache.connectSql('bot402ModReport', 'SELECT * FROM `bot402ModReport`', mapDict, 'qn')
-    
+    model = TestModel(qn=int(input("> ")), au="az")
     print(cache.cacheList)
-    
-    model = TestModel(qn=int(input("Please input UID > ")))
+    # model._dropTable()
+    # model._createTable()
+    '''
     print(model.cache)
     print(model._get("nickname"))
-    model._set(nickname="123456")
+    model._set(nickname=input("> "))._sync()
     print(model._get("nickname"))
-    
-    model._insert(nickname="test", qn=int(input("> ")), au="az", time="time")
-    
-    print(cache.cacheList)
-    
-    model._insert(nickname="test", qn=int(input("> ")), au="az", time="time")._sync()
-    
-    print(cache.cacheList)
-    
-    model._delete()
-    
-    print(cache.cacheList)
+    '''
