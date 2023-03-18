@@ -20,7 +20,6 @@ class BanWords:
     
     def check(self, weijinFlag=True):
         se = self.data.se
-        uid = se.get('user_id')
         gid = se.get('group_id')
         message = self.data.message
         

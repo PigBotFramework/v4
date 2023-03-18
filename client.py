@@ -89,13 +89,10 @@ class Msg(Client):
         else:
             dataa = self.CallApi('send_msg', {'group_id':gid,'message':params})
         
-        if dataa.get('status') != 'failed':
-            mid = dataa.get('data').get('message_id')
-        else:
+        if dataa.get('status') == 'failed':
             print(f'PBF Server: Failed to send message')
             print(f'PBF Server: |- Wording: {dataa.get("wording")}')
             print(f'PBF Server: |- UID:{uid} GID:{gid}')
-            mid = None
         
         return dataa
 
@@ -192,11 +189,7 @@ class Msg(Client):
         return msg
 
     def send(self):
-        uid = self.data.se.get("user_id")
-        gid = self.data.se.get("group_id")
-        uuid = self.data.uuid
         botSettings = self.data.botSettings
-        groupSettings = self.data.groupSettings
         
         self.content.append(self.randomCoin())
         
