@@ -1,4 +1,4 @@
-import mysql, cache
+from controller import Cache, Mysql
 
 class ModelBase:
     sql_update: str = "UPDATE `{}` SET {} WHERE {}"
@@ -28,7 +28,7 @@ class ModelBase:
     def _getIndexStr(self, i):
         strr: str = f"['{self._c()}']"
         listt: list = self.map
-        dictOb = cache.cacheList
+        dictOb = Cache.cacheList
         for l in listt:
             strr += f"[{eval(str(i.get(l)))}]"
             dictOb = dictOb.get(str(i.get(l)))
@@ -100,13 +100,13 @@ class ModelBase:
             elif isinstance(i, str):
                 strr += i
         sql = self.sql_createTable.format(self._getTableName(), strr)
-        mysql.commonx(sql)
+        Mysql.commonx(sql)
 
         self.cache = {}
-        cache.set(self._c(), {})
+        Cache.set(self._c(), {})
         
         sql = self.sql_select.format(self._getTableName())
-        data = mysql.selectx(sql)
+        data = Mysql.selectx(sql)
         for i in data:
             strr = self._getIndexStr(i)
             exec(f"cache.cacheList{strr} = {eval(str(i))}")
@@ -114,7 +114,7 @@ class ModelBase:
         return self
     
     def _dropTable(self):
-        mysql.commonx(self.sql_dropTable.format(self._getTableName()))
+        Mysql.commonx(self.sql_dropTable.format(self._getTableName()))
         self.delFlag = True
         del self
         return None
@@ -152,7 +152,7 @@ class ModelBase:
     def __delete(self):
         # 数据库删除
         if self.format_delete:
-            mysql.commonx(self.sql_delete.format(self._getTableName(), self.sql_whereCase), tuple(self.sql_whereList))
+            Mysql.commonx(self.sql_delete.format(self._getTableName(), self.sql_whereCase), tuple(self.sql_whereList))
             self.format_delete = False
         else:
             return False
@@ -231,7 +231,7 @@ class ModelBase:
             vs += f"({strr})"
             vsl += i
         
-        mysql.commonx(self.sql_insert.format(self._getTableName(), colname, vs), tuple(vsl))
+        Mysql.commonx(self.sql_insert.format(self._getTableName(), colname, vs), tuple(vsl))
         
     def __update(self):
         if not self.format_update:
@@ -249,7 +249,7 @@ class ModelBase:
             strr += f"`{k}` = %s"
             vList.append(v)
         sql = self.sql_update.format(self._getTableName(), strr, self.sql_whereCase)
-        mysql.commonx(sql, tuple(vList+self.sql_whereList))
+        Mysql.commonx(sql, tuple(vList+self.sql_whereList))
     
     def _sync(self):
         self.__insert()
@@ -257,7 +257,7 @@ class ModelBase:
         self.__delete()
         
     def _refresh(self, insertFlag: bool = False, kwargs: dict = {}):
-        self.cache = cache.get(self._c())
+        self.cache = Cache.get(self._c())
         
         # 初始化数据表
         if self.cache == None:
@@ -308,5 +308,5 @@ def mapDict(ob, key: str):
 
 if __name__ == "__main__":
     model = TestModel(qn=int(input("> ")), au="az")
-    print(cache.cacheList)
+    print(Cache.cacheList)
     

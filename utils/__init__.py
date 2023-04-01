@@ -1,8 +1,8 @@
 import hmac, random, math
-from .coin import Coin
-from .cqcode import CQCode
-import mysql
-from PbfStruct import Struct
+from utils.Coin import Coin
+from utils.CQCode import CQCode
+from controller import Mysql
+from controller.PbfStruct import Struct
 from googletrans import Translator as googleTranslator
 
 googleTranslatorIns = googleTranslator()
@@ -22,7 +22,7 @@ class Utils:
     def insertStr(self, content):
         sendStr = 'abcdefghijklmnopqrstuvwxyz'
         if '[CQ:' not in content:
-            for i in range(math.floor(len(content)/15)):
+            for _ in range(math.floor(len(content)/15)):
                 pos = random.randint(0, len(content))
                 content = content[:pos] + sendStr[random.randint(0, 25)] + content[pos:]
             self.content = content
@@ -34,7 +34,7 @@ class Utils:
         str1 = "23456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         #循环num次生成num长度的字符串
         code =''
-        for i in range(num):
+        for _ in range(num):
             index = random.randint(0,len(str1)-1)
             code += str1[index]
         return code
@@ -55,7 +55,7 @@ class Utils:
             return text
         try:
             return googleTranslatorIns.translate(text, dest=to_lang).text
-        except Exception as e:
+        except Exception:
             return text
 
     def findObject(self, key, value, ob):
@@ -75,7 +75,7 @@ class Utils:
         '''
         if not uuid:
             raise ValueError('Please give a non-empty string as a uuid.')
-        botOb = mysql.selectx('SELECT * FROM `botBotconfig` WHERE `uuid`=%s;', (uuid))
+        botOb = Mysql.selectx('SELECT * FROM `botBotconfig` WHERE `uuid`=%s;', (uuid))
         if not botOb:
             raise ValueError('Cannot find the right secret. Is the uuid right?')
         else:
