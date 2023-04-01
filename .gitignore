@@ -1,6 +1,6 @@
 *.sh
 *.log
-resources/createimg/
+resources/
 __pycache__
 *.out
 plugins/
