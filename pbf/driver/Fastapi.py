@@ -69,8 +69,11 @@ utils = Utils()
 
 @app.on_event('shutdown')
 def app_on_shutdown():
-    uts.scheduler.shutdown(wait=False)
-    p('Scheduler shutdowned.')
+    try:
+        uts.scheduler.shutdown(wait=False)
+        p('Scheduler shutdowned.')
+    except Exception:
+        pass
 
 @app.post("/", tags=['上报接口'])
 async def post_data(request: Request, X_Signature: Union[str, None] = Header(default=None)):
@@ -386,6 +389,6 @@ def serve(port):
     p('Scheduler started.')
     
     p(f'Running on {port}')
-    uvicorn.run(app="enter:app",  host='0.0.0.0', port=int(port), reload=True)
+    uvicorn.run(app="pbf.driver.Fastapi:app",  host='0.0.0.0', port=int(port), reload=True)
 
 Handler.reloadPlugins()
