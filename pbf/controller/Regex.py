@@ -33,7 +33,7 @@ class Regex:
         gid = self.data.se.get('group_id')
         se = self.data.se
         coin = self.data.userCoin
-        print(uid, gid, se)
+        _ = f'{uid}{gid}{se}'
         
         if coin == -1:
             coin = '用户未注册！'

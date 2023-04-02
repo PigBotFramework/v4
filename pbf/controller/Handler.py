@@ -31,6 +31,7 @@ def reloadPlugins(flag: bool=False):
     
     # 引入
     for i in pluginsList:
+        p('Load Plugin:', i)
         try:
             module = importlib.import_module(f'plugins.{i}')
 
@@ -71,7 +72,7 @@ def reloadPlugins(flag: bool=False):
             p(f'An error was made by loading plugins: {i}\n{traceback.format_exc()}')
             pluginsList.remove(i)
     
-    
+    p('commandListenerList', commandListenerList)
     Cache.connectSql('keywordList', 'SELECT * FROM `botKeyword` WHERE `state` = 0', mapDictToList, 'uuid')
     Cache.connectSql('botBotconfig', 'SELECT * FROM `botBotconfig`', mapDict, 'uuid')
     Cache.connectSql('botWeijin', "SELECT * FROM `botWeijin` WHERE `state`=0 or `state`=3;", noMap)
@@ -478,5 +479,5 @@ def loadCache(**kwargs):
 
 utils = Utils()
 
-def p(string: str):
-    print(f'PBF Server: {string}')
+def p(*str):
+    print('PBF Server:', *str)
