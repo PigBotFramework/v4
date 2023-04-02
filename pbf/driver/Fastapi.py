@@ -56,7 +56,6 @@ app = FastAPI(
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-port = str(sys.argv[1])
 
 app.add_middleware(
     CORSMiddleware,
@@ -73,7 +72,7 @@ def app_on_shutdown():
     uts.scheduler.shutdown(wait=False)
     p('Scheduler shutdowned.')
 
-@app.post("/{}".format(port), tags=['上报接口'])
+@app.post("/", tags=['上报接口'])
 async def post_data(request: Request, X_Signature: Union[str, None] = Header(default=None)):
     """
     描述：**机器人事件POST上报接口**  
@@ -94,13 +93,13 @@ async def post_data(request: Request, X_Signature: Union[str, None] = Header(def
             se = await request.json()
             p(f'Recv: {se}')
             # botIns.CrashReport(se, params.get("uuid"))
-            Handler.requestInit(se, params.get("uuid"), port)
+            Handler.requestInit(se, params.get("uuid"))
         else:
             return {"code":403}
     except Exception as e:
         p(f'Crashed: {e}\n{traceback.format_exc()}')
 
-@app.get("/{}/get".format(port), tags=['上报接口'])
+@app.get("/get", tags=['上报接口'])
 async def get_data(uuid:str, pswd:str, params:str):
     """
     描述：**机器人事件GET上报接口**  
@@ -108,13 +107,13 @@ async def get_data(uuid:str, pswd:str, params:str):
     上报数据：**`params`参数为`json_encode()`且`urlencode()`后的上报数据**  
     """
     if utils.getPswd(uuid) == pswd:
-        Handler.requestInit(json.loads(params), uuid, port)
+        Handler.requestInit(json.loads(params), uuid)
         return json.loads(params)
     else:
         return {"code":403}
 
-@app.post("/{}/testSpeed".format(port), tags=['其他接口'])
-@app.get("/{}/testSpeed".format(port), tags=['其他接口'])
+@app.post("/testSpeed", tags=['其他接口'])
+@app.get("/testSpeed", tags=['其他接口'])
 @limiter.limit("12/minute")
 async def webtestSpeed(request: Request, X_Forwarded_For: Union[str, None] = Header(default=None)):
     """
@@ -124,13 +123,13 @@ async def webtestSpeed(request: Request, X_Forwarded_For: Union[str, None] = Hea
     """
     timeStart = time.time()
     message = "菜单 noreply"
-    Handler.requestInit({'post_type': 'message', 'message_type': 'group', 'self_id': 3558267090, 'sub_type': 'normal', 'group_id': 763432519, 'message': message, 'sender': {'age': 0, 'area': '', 'card': '', 'level': '', 'nickname': '', 'role': 'owner', 'sex': 'unknown', 'title': '', 'user_id': 66600000}, 'user_id': 66600000, 'font': 0, 'raw_message': message}, "123456789", port)
+    Handler.requestInit({'post_type': 'message', 'message_type': 'group', 'self_id': 3558267090, 'sub_type': 'normal', 'group_id': 763432519, 'message': message, 'sender': {'age': 0, 'area': '', 'card': '', 'level': '', 'nickname': '', 'role': 'owner', 'sex': 'unknown', 'title': '', 'user_id': 66600000}, 'user_id': 66600000, 'font': 0, 'raw_message': message}, "123456789")
     timeEnd = time.time()
-    report = {"code":200,"port":int(port)%1000,"startTime":timeStart,"endTime":timeEnd,"cost":timeEnd-timeStart}
+    report = {"code":200,"startTime":timeStart,"endTime":timeEnd,"cost":timeEnd-timeStart}
     return report
 
-@app.post("/{}/status".format(port), tags=['其他接口'])
-@app.get("/{}/status".format(port), tags=['其他接口'])
+@app.post("/status", tags=['其他接口'])
+@app.get("/status", tags=['其他接口'])
 async def webstatus():
     """
     描述：获取处理器状态  
@@ -138,7 +137,7 @@ async def webstatus():
     """
     return json.dumps({"code":200}, ensure_ascii=False)
 
-@app.post("/{}/webhook".format(port), tags=['其他接口'])
+@app.post("/webhook", tags=['其他接口'])
 async def webhook(request: Request, X_Hub_Signature: Union[str, None] = Header(default=None)):
     """
     描述：WebHooks接口  
@@ -157,8 +156,8 @@ async def webhook(request: Request, X_Hub_Signature: Union[str, None] = Header(d
     os.system('./pull.sh {0} {1} {2}'.format(data.get('repository').get('name'), data.get('repository').get('url'), data.get('repository').get('full_name')))
     return {"status": 200}
 
-@app.get("/{}/overview".format(port), tags=['GOCQ接口'])
-@app.post("/{}/overview".format(port), tags=['GOCQ接口'])
+@app.get("/overview", tags=['GOCQ接口'])
+@app.post("/overview", tags=['GOCQ接口'])
 async def weboverview(uuid:str):
     """
     描述：获取机器人GOCQ数据概览  
@@ -193,7 +192,7 @@ async def weboverview(uuid:str):
     except Exception:
         return traceback.format_exc()
     
-@app.get("/{}/getFriendAndGroupList".format(port), tags=['GOCQ接口'])
+@app.get("/getFriendAndGroupList", tags=['GOCQ接口'])
 async def webgetFriendAndGroupList(pswd:str, uuid:str):
     """
     描述：获取机器人好友和群聊列表  
@@ -210,7 +209,7 @@ async def webgetFriendAndGroupList(pswd:str, uuid:str):
     except Exception:
         return traceback.format_exc()
 
-@app.get("/{}/getFriendList".format(port), tags=['GOCQ接口'])
+@app.get("/getFriendList", tags=['GOCQ接口'])
 async def webgetFriendList(pswd:str, uuid:str):
     """获取机器人好友列表"""
     if pswd == utils.getPswd(uuid):
@@ -218,7 +217,7 @@ async def webgetFriendList(pswd:str, uuid:str):
     else:
         return 'Password error.'
 
-@app.get("/{}/kickUser".format(port), tags=['GOCQ接口'])
+@app.get("/kickUser", tags=['GOCQ接口'])
 async def webkickUser(pswd:str, uuid:str, gid:int, uid:int):
     """踢出某人"""
     if pswd == utils.getPswd(uuid):
@@ -227,7 +226,7 @@ async def webkickUser(pswd:str, uuid:str, gid:int, uid:int):
     else:
         return 'Password error.'
 
-@app.get("/{}/banUser".format(port), tags=['GOCQ接口'])
+@app.get("/banUser", tags=['GOCQ接口'])
 async def webBanUser(pswd:str, uuid:str, uid:int, gid:int, duration:int):
     """禁言某人"""
     if pswd == utils.getPswd(uuid):
@@ -236,7 +235,7 @@ async def webBanUser(pswd:str, uuid:str, uid:int, gid:int, duration:int):
     else:
         return 'Password error.'
 
-@app.get("/{}/delete_msg".format(port), tags=['GOCQ接口'])
+@app.get("/delete_msg", tags=['GOCQ接口'])
 async def webDeleteMsg(pswd:str, uuid:str, message_id:str):
     """撤回消息"""
     if pswd == utils.getPswd(uuid):
@@ -245,7 +244,7 @@ async def webDeleteMsg(pswd:str, uuid:str, message_id:str):
     else:
         return 'Password error.'
 
-@app.get("/{}/getMessage".format(port), tags=['GOCQ接口'])
+@app.get("/getMessage", tags=['GOCQ接口'])
 async def webGetMessage(uuid:str, message_id:int):
     """获取消息"""
     try:
@@ -253,7 +252,7 @@ async def webGetMessage(uuid:str, message_id:int):
     except Exception:
         return traceback.format_exc()
 
-@app.get("/{}/getForwardMessage".format(port), tags=['GOCQ接口'])
+@app.get("/getForwardMessage", tags=['GOCQ接口'])
 async def webGetForwardMessage(uuid:str, message_id:str):
     """获取合并转发消息"""
     try:
@@ -261,7 +260,7 @@ async def webGetForwardMessage(uuid:str, message_id:str):
     except Exception:
         return traceback.format_exc()
 
-@app.get("/{}/getGroupHistory".format(port), tags=['GOCQ接口'])
+@app.get("/getGroupHistory", tags=['GOCQ接口'])
 async def webGetGroupHistory(uuid:str, group_id:int, message_seq:int=0):
     """获取群聊聊天记录"""
     try:
@@ -269,8 +268,8 @@ async def webGetGroupHistory(uuid:str, group_id:int, message_seq:int=0):
     except Exception:
         return traceback.format_exc()
 
-@app.get("/{}/sendMessage".format(port), tags=['GOCQ接口'])
-@app.post("/{}/sendMessage".format(port), tags=['GOCQ接口'])
+@app.get("/sendMessage", tags=['GOCQ接口'])
+@app.post("/sendMessage", tags=['GOCQ接口'])
 async def webSendMessage(pswd:str, uuid:str, uid:int, gid:int, message:str):
     """发送消息"""
     if pswd == utils.getPswd(uuid):
@@ -279,18 +278,18 @@ async def webSendMessage(pswd:str, uuid:str, uid:int, gid:int, message:str):
     else:
         return 'Password error.'
         
-@app.get("/{}/callApi".format(port), tags=['GOCQ接口'])
-@app.post("/{}/callApi".format(port), tags=['GOCQ接口'])
+@app.get("/callApi", tags=['GOCQ接口'])
+@app.post("/callApi", tags=['GOCQ接口'])
 async def webCallApi(uuid:str, name:str, pswd:str, params={}):
     """发送消息"""
     return Handler.CallApi(name, json.loads(params), uuid) if pswd == utils.getPswd(uuid) else 'Password error.'
 
-@app.get("/{}/getGroupList".format(port), tags=['GOCQ接口'])
+@app.get("/getGroupList", tags=['GOCQ接口'])
 async def getGroupList(uuid:str):
     """获取某机器人群聊列表"""
     return Handler.CallApi('get_group_list', {}, uuid)
     
-@app.get("/{}/getGroupDe".format(port), tags=['GOCQ接口'])
+@app.get("/getGroupDe", tags=['GOCQ接口'])
 @limiter.limit("1/minute")
 async def webgetGroupDe(uuid:str, request: Request):
     """
@@ -307,7 +306,7 @@ async def webgetGroupDe(uuid:str, request: Request):
     except Exception as e:
         return e
 
-@app.get("/{}/MCServer".format(port), tags=['其他接口'])
+@app.get("/MCServer", tags=['其他接口'])
 async def MCServer(msg:str, uuid:str, qn:int):
     """MC服务器消息同步"""
     if msg != '' and '[Server] <' not in msg:
@@ -316,24 +315,24 @@ async def MCServer(msg:str, uuid:str, qn:int):
     
     return '200 OK.'
 
-@app.get('/{}/getPluginsData'.format(port), tags=['其他接口'])
+@app.get('/getPluginsData', tags=['其他接口'])
 async def webgetPluginsData():
     """刷新插件数据"""
     return Cache.get('pluginsData', [])
 
-@app.get('/{}/getPluginByName'.format(port), tags=['其他接口'])
+@app.get('/getPluginByName', tags=['其他接口'])
 async def webgetPluginByName(name: str):
     """刷新插件数据"""
     cpl = Cache.get('commandPluginsList', {}).get(name)
     pmbn = Cache.get('pluginsMappedByName', {}).get(name)
     return {'pluginData':pmbn, 'cmds':cpl}
 
-@app.get('/{}/getGroupMemberList'.format(port), tags=['GOCQ接口'])
+@app.get('/getGroupMemberList', tags=['GOCQ接口'])
 async def webGetGroupMemberList(uuid:str, gid:int):
     """获取群聊成员列表"""
     return Handler.CallApi('get_group_member_list', {'group_id':gid}, uuid)
 
-@app.get('/{}/getGOCQConfig'.format(port), tags=['其他接口', 'GOCQ接口'])
+@app.get('/getGOCQConfig', tags=['其他接口', 'GOCQ接口'])
 async def webgetGOCQConfig(uin:int, host:str, port:int, uuid:str, secret:str, password:str="null", url:str="https://pbfpost.xzynb.top/1000/?uuid={0}"):
     '''生成GOCQ配置'''
     try:
@@ -354,13 +353,13 @@ async def webgetGOCQConfig(uin:int, host:str, port:int, uuid:str, secret:str, pa
     except Exception as e:
         return e
 
-@app.get("/{}/reloadPlugins".format(port), tags=['其他接口'])
+@app.get("/reloadPlugins", tags=['其他接口'])
 async def webreloadPlugins():
     '''刷新插件及指令列表'''
-    return Handler.reloadPlugins(port)
+    return Handler.reloadPlugins()
 
 """
-@app.get("/{}/sendAll".format(port), tags=['其他接口', 'GOCQ接口'])
+@app.get("/sendAll", tags=['其他接口', 'GOCQ接口'])
 async def websendAll(pswd:str):
     '''机器人通知机器人主人'''
     try:
@@ -380,16 +379,13 @@ async def websendAll(pswd:str):
 
 def serve(port):
     p('Loading plugins...')
-    Handler.reloadPlugins(port, True)
+    Handler.reloadPlugins(True)
     p('Plugins loaded.')
 
     uts.scheduler.start()
     p('Scheduler started.')
     
     p(f'Running on {port}')
-    uvicorn.run(app="enter:app",  host='0.0.0.0', port=int(port), reload=True, debug=True)
+    uvicorn.run(app="enter:app",  host='0.0.0.0', port=int(port), reload=True)
 
-Handler.reloadPlugins(port)
-
-if __name__ == '__main__':
-    serve(port)
+Handler.reloadPlugins()

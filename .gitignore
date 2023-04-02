@@ -10,8 +10,7 @@ sendmail.py
 core.*
 build/
 dist/
-pbf.egg-info/
-resources/_h5ai/
+*.egg-info/
 *.bak
 ks
 .vscode

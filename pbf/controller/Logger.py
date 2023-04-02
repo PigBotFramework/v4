@@ -17,7 +17,7 @@ class Logger:
         now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
         ctime = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        str = f"[{ctime}] [{self.data.port}/{self.data.runningProgram}] [{self.data.uuid}/{self.data.se.get('user_id')}/{self.data.se.get('group_id')}] [{level}] {message}\n"
+        str = f"[{ctime}] [{self.data.runningProgram}] [{self.data.uuid}/{self.data.se.get('user_id')}/{self.data.se.get('group_id')}] [{level}] {message}\n"
         print(str)
 
         fileName = now.strftime("./logs/%Y-%m-%d.log")

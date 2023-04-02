@@ -16,7 +16,7 @@ from .Regex import Regex
 from .Logger import Logger
 from .Menu import Menu
 
-def reloadPlugins(port: int, flag=False):
+def reloadPlugins(flag: bool=False):
     noticeListenerList = []
     requestListenerList = []
     metaListenerList = []
@@ -135,7 +135,7 @@ def send(uuid, uid, content, gid=None):
 
 
 # ======上报处理逻辑======
-def requestInit(se: dict, uuid: str, port: int):
+def requestInit(se: dict, uuid: str):
     message = se.get('message')
     if se.get('meta_event_type') == 'heartbeat':
         p('Pass heartbeat event.')
@@ -166,7 +166,6 @@ def requestInit(se: dict, uuid: str, port: int):
         isGlobalBanned = isGlobalBanned,
         userInfo = userInfo,
         pluginsList = pluginsList,
-        port = port,
         se = se,
         uuid = uuid,
         message = message,
