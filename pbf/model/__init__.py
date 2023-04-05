@@ -14,7 +14,7 @@ class ModelBase:
     db_perfix: str = "bot_"
     
     col: list = []
-    cache = None
+    cache: dict = []
     map: list = []
     args: list = []
     exists: bool = True
@@ -25,15 +25,19 @@ class ModelBase:
     format_delete: bool = False
     format_createTable: list = []
 
+    def __str__(self):
+        return f'<pbf.model.ModelBase {self.db_table}>'
+
     def _getIndexStr(self, i):
         strr: str = f"['{self._c()}']"
         listt: list = self.map
         dictOb = Cache.cacheList
         for l in listt:
-            strr += f"[{eval(str(i.get(l)))}]"
+            ob = i.get(l)
+            strr += f"[\"{ob}\"]" if isinstance(ob, str) else f"[{eval('i.get(l)')}]"
             dictOb = dictOb.get(str(i.get(l)))
             if dictOb == None:
-                exec(f"cache.cacheList{strr} = {'{}'}")
+                exec(f"Cache.cacheList{strr} = {'{}'}")
                 dictOb = {}
             
         return strr
@@ -45,6 +49,7 @@ class ModelBase:
         return "db_" + self._getTableName()
     
     def _getCol(self):
+        self.col = []
         for i in dir(self):
             if i[0:1] == "_" or not callable(getattr(self, i)):
                 continue
@@ -61,6 +66,13 @@ class ModelBase:
             })
     
     def __init__(self, **kwargs):
+        # Init class vars.
+        for i in dir(self):
+            if i[0:1] == "_" or callable(getattr(self, i)):
+                continue
+            varType = type(getattr(self, i))
+            setattr(self, i, varType(getattr(self, i)))
+
         self.args = kwargs
         
         # 初始化数据
@@ -90,6 +102,7 @@ class ModelBase:
         strr: str = ""
         flag: bool = False
         listt: list = self.col + self.format_createTable
+
         for i in listt:
             if flag:
                 strr += ", "
@@ -109,8 +122,8 @@ class ModelBase:
         data = Mysql.selectx(sql)
         for i in data:
             strr = self._getIndexStr(i)
-            exec(f"cache.cacheList{strr} = {eval(str(i))}")
-
+            exec(f"Cache.cacheList{strr} = {eval(str(i))}")
+        
         return self
     
     def _dropTable(self):
@@ -125,7 +138,7 @@ class ModelBase:
     def _insert(self, **kwargs):
         # 在缓存中新增
         strr = self._getIndexStr(kwargs)
-        exec(f"cache.cacheList{strr} = {eval(str(kwargs))}")
+        exec(f"Cache.cacheList{strr} = {eval(str(kwargs))}")
         
         self.exists = True
         self.delFlag = False
@@ -143,7 +156,7 @@ class ModelBase:
     def _delete(self):
         # 缓存删除
         strr = self._getIndexStr(self.args)
-        exec(f"del cache.cacheList{strr}")
+        exec(f"del Cache.cacheList{strr}")
         
         self.format_delete = True
         
@@ -166,7 +179,7 @@ class ModelBase:
             
             # 修改缓存
             '''
-            _cache = cache.cacheList
+            _cache = Cache.cacheList
             cacheList: list = []
             map: list = ["_db_table"]
             self.args["_db_table"] = self._c()
@@ -186,21 +199,22 @@ class ModelBase:
                 _cache = _temp
                 listLength -= 1
             
-            cache.cacheList = _cache
+            Cache.cacheList = _cache
             '''
             
             self.cache[k] = v
             
             strr: str = ""
             for i in self.map:
-                strr += f"[{eval(str(self.args.get(i)))}]"
-            exec(f"cache.cacheList{strr} = {eval(str(self.cache))}")
+                ob = self.args.get(i)
+                strr += f"[\"{ob}\"]" if isinstance(ob, str) else f"[{eval('self.args.get(i)')}]"
+            exec(f"Cache.cacheList{strr} = {eval(str(self.cache))}")
         return self
     
     def __insert(self):
         if not self.format_insert:
             return False
-        
+
         colname: str = ""
         flag: bool = False
         for i in self.col:
@@ -262,6 +276,7 @@ class ModelBase:
         # 初始化数据表
         if self.cache == None:
             self._createTable()
+            self.cache = Cache.get(self._c())
             
         # 获取具体cache
         iter = 0
@@ -275,38 +290,3 @@ class ModelBase:
                 else:
                     raise Exception("Key Not Found.")
             iter += 1
-
-# ============ DEBUG ============
-
-class TestModel(ModelBase):
-    db_table = "402ModReport"
-    db_perfix = "bot"
-    map = ["qn"]
-    format_createTable = ["PRIMARY KEY (`id`)"]
-    
-    def id(self):
-        return "INT(11) NOT NULL AUTO_INCREMENT"
-    
-    def qn(self):
-        return "INT(11) NOT NULL COMMENT 'UID'"
-    
-    def au(self):
-        return "VARCHAR(11) NOT NULL COMMENT 'AUID'"
-    
-    def time(self):
-        return "VARCHAR(50) COMMENT '报名时间'"
-    
-    def nickname(self):
-        return "VARCHAR(100) COMMENT '昵称'"
-
-def mapDict(ob, key: str):
-    obDict = {}
-    for i in ob:
-        obDict[i.get(key)] = i
-    
-    return obDict
-
-if __name__ == "__main__":
-    model = TestModel(qn=int(input("> ")), au="az")
-    print(Cache.cacheList)
-    

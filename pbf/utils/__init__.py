@@ -3,6 +3,7 @@ from .Coin import Coin
 from .CQCode import CQCode
 from ..controller import Mysql
 from ..controller.PbfStruct import Struct
+from ..model.BotSettingsModel import BotSettingsModel
 from googletrans import Translator as googleTranslator
 
 googleTranslatorIns = googleTranslator()
@@ -75,11 +76,14 @@ class Utils:
         '''
         if not uuid:
             raise ValueError('Please give a non-empty string as a uuid.')
-        botOb = Mysql.selectx('SELECT * FROM `botBotconfig` WHERE `uuid`=%s;', (uuid))
-        if not botOb:
+        botOb = BotSettingsModel(uuid=uuid)
+        print(botOb._get('secret'))
+        if botOb.exists == False:
+            botOb._delete()
+            del botOb
             raise ValueError('Cannot find the right secret. Is the uuid right?')
         else:
-            return botOb[0].get('secret')
+            return botOb._get('secret')
 
     def encryption(self, data, secret, encode='utf-8', digestmod='sha1'):
         '''

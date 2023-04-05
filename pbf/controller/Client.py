@@ -9,6 +9,7 @@ from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw, ImageFilter
 from ..utils import Utils
 from ..utils.pillow.build_image import BuildImage, Text2Image
+from ..model.BotSettingsModel import BotSettingsModel
 
 class Client:
     data: Struct = None
@@ -21,9 +22,9 @@ class Client:
     def CallApi(self, api, parms={}, timeout=10):
         botSettings = self.data.botSettings
         if not botSettings:
-            botSettings = Cache.get('botBotconfig').get(self.data.uuid)
+            botSettings = BotSettingsModel(uuid=self.data.uuid)
             self.data.botSettings = botSettings
-        return requests.post(url='{0}/{1}?access_token={2}'.format(botSettings.get('httpurl'), api, botSettings.get('secret')), json=parms, timeout=timeout).json()
+        return requests.post(url='{0}/{1}?access_token={2}'.format(botSettings._get('httpurl'), api, botSettings._get('secret')), json=parms, timeout=timeout).json()
     
     def msg(self, *args, coinFlag=True, insertStrFlag=False, retryFlag=True, translateFlag=True):
         return Msg(self.data, *args, coinFlag=coinFlag, insertStrFlag=insertStrFlag, retryFlag=retryFlag, translateFlag=translateFlag)

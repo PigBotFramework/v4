@@ -3,6 +3,7 @@ from .Client import Client
 from . import Cache
 from ..statement.FaceStatement import FaceStatement
 from ..statement.TextStatement import TextStatement
+from ..model.BotPluginsModel import BotPluginsModel
 
 class Menu:
     data: Struct = None
@@ -14,7 +15,8 @@ class Menu:
     
     def getModedMenu(self):
         pluginsList = Cache.get('commandPluginsList')
-        botPluginsList = Cache.get('botPluginsList').get(self.data.uuid)
+        botPluginsList = BotPluginsModel(uuid=self.data.uuid)._get('data')
+        botPluginsList = botPluginsList if botPluginsList is not None else []
         commandModedList = []
 
         for i in botPluginsList:

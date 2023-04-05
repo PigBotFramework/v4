@@ -12,7 +12,7 @@ def selectx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user
     try:
         cursor.execute(sqlstr, params)
     except Exception as e:
-        # self.CrashReport("selectx execute error\nsql: {}\nparams: {}\nerror: {}".format(sqlstr, params, e), "selectx", level="WARNING")
+        print("selectx execute error\nsql: {}\nparams: {}\nerror: {}".format(sqlstr, params, e))
         raise Exception(e)
     result = cursor.fetchall()
     cursor.close()
@@ -25,7 +25,7 @@ def commonx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user
     try:
         cursor.execute(sqlstr, params)
     except Exception as e:
-        # self.CrashReport("commonx execute error\nsql: {}\nparams: {}\nerror: {}".format(sqlstr, params, e), "commonx", level="WARNING")
+        print("commonx execute error\nsql: {}\nparams: {}\nerror: {}".format(sqlstr, params, e))
         raise Exception(e)
     connect.commit()
     cursor.close()

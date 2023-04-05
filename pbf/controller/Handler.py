@@ -15,6 +15,11 @@ from .CommandListener import CommandListener
 from .Regex import Regex
 from .Logger import Logger
 from .Menu import Menu
+from ..model.BotPluginsModel import BotPluginsModel
+from ..model.BlackListModel import BlackListModel
+from ..model.BotSettingsModel import BotSettingsModel
+from ..model.GroupSettingsModel import GroupSettingsModel
+from ..model.UserInfoModel import UserInfoModel
 
 def reloadPlugins(flag: bool=False):
     noticeListenerList = []
@@ -72,16 +77,15 @@ def reloadPlugins(flag: bool=False):
             p(f'An error was made by loading plugins: {i}\n{traceback.format_exc()}')
             pluginsList.remove(i)
     
-    p('commandListenerList', commandListenerList)
-    Cache.connectSql('keywordList', 'SELECT * FROM `botKeyword` WHERE `state` = 0', mapDictToList, 'uuid')
-    Cache.connectSql('botBotconfig', 'SELECT * FROM `botBotconfig`', mapDict, 'uuid')
-    Cache.connectSql('botWeijin', "SELECT * FROM `botWeijin` WHERE `state`=0 or `state`=3;", noMap)
-    Cache.connectSql('botReplace', "SELECT * FROM `botReplace`", noMap)
-    Cache.connectSql('settingName', "SELECT * FROM `botSettingName`", noMap)
-    Cache.connectSql('groupSettings', 'SELECT * FROM `botSettings`', mapDoubleDict, 'qn uuid')
-    Cache.connectSql('userCoin', "SELECT * FROM `botCoin`", mapDict, 'qn')
-    Cache.connectSql('botPluginsList', 'SELECT * FROM `botPlugins`', mapDictToList, 'uuid')
-    Cache.connectSql('globalBanned', "SELECT * FROM `botQuanping`", mapDict, 'qn')
+    # Cache.connectSql('keywordList', 'SELECT * FROM `botKeyword` WHERE `state` = 0', mapDictToList, 'uuid')
+    # Cache.connectSql('botBotconfig', 'SELECT * FROM `botBotconfig`', mapDict, 'uuid')
+    # Cache.connectSql('botWeijin', "SELECT * FROM `botWeijin` WHERE `state`=0 or `state`=3;", noMap)
+    # Cache.connectSql('botReplace', "SELECT * FROM `botReplace`", noMap)
+    # Cache.connectSql('settingName', "SELECT * FROM `botSettingName`", noMap)
+    # Cache.connectSql('groupSettings', 'SELECT * FROM `botSettings`', mapDoubleDict, 'qn uuid')
+    # Cache.connectSql('userCoin', "SELECT * FROM `botCoin`", mapDict, 'qn')
+    # Cache.connectSql('botPluginsList', 'SELECT * FROM `botPlugins`', mapDictToList, 'uuid')
+    # Cache.connectSql('globalBanned', "SELECT * FROM `botQuanping`", mapDict, 'qn')
     loadCache(
         commandModedList = commandModedList,
         commandPluginsList = commandPluginsList,
@@ -145,24 +149,27 @@ def requestInit(se: dict, uuid: str):
     # 初始化各项
     args = se.get("message").split() if se.get('message') else None # 初始化参数
     messageType = 'cid' if se.get('channel_id') else 'qn' # 消息来源（频道或群组）
-    botSettings = Cache.get('botBotconfig', {}).get(uuid) # 机器人实例设置
-    groupSettings = None if se.get('group_id') == None else Cache.get('groupSettings', {}).get(se.get('group_id'), {}).get(uuid) # 加载群聊设置
+    botSettings = BotSettingsModel(uuid=uuid) # 机器人实例设置
+    groupSettings = GroupSettingsModel(uuid=uuid, qn=se.get('group_id'))
     if se.get('user_id'):
-        userInfo = Cache.get('userCoin', {}).get(se.get('user_id'))
-        userCoin = -1 if userInfo == None else userInfo.get('value')
-        isGlobalBanned = Cache.get('globalBanned', {}).get(se.get('user_id'))
+        userInfo = UserInfoModel(qn=se.get('user_id'), uuid=uuid, value=0)
+        userCoin = userInfo._get('value', -1)
+        isGlobalBanned = BlackListModel(qn=se.get('user_id'), reason='Debug', time=114514, uuid='uuid')
+        if isGlobalBanned.exists == False:
+            isGlobalBanned._delete()
+            del isGlobalBanned
+            isGlobalBanned = None
     else:
         userInfo = None
         userCoin = -1
         isGlobalBanned = None
     
-    pluginsList = Cache.get('botPluginsList', {}).get(uuid)
+    pluginsList = BotPluginsModel(uuid=uuid)._get('data')
     
     struct = Struct(
         args = args,
         messageType = messageType,
         botSettings = botSettings,
-        groupSettings = groupSettings,
         userCoin = userCoin,
         isGlobalBanned = isGlobalBanned,
         userInfo = userInfo,
@@ -180,19 +187,14 @@ def requestInit(se: dict, uuid: str):
     banwords = BanWords(struct)
     menu = Menu(struct)
     p('Inited all vars.')
-    
-    if not groupSettings and se.get("group_id") != None: # 初始化群聊设置
-        pbf.groupInit()
-        return 
 
     if isGlobalBanned == None and se.get('group_id') != None:
-        if not groupSettings.get("power", True):
+        if not groupSettings._get("power", True):
             if message == '开机':
-                if se.get('sender').get('role') != 'member' or se.get('user_id') == botSettings.get('owner') or se.get('user_id') == botSettings.get('second_owner'):
-                    groupSettings['power'] = 1
-                    Cache.set('groupSettings', groupSettings)
+                if se.get('sender').get('role') != 'member' or se.get('user_id') == botSettings._get('owner') or se.get('user_id') == botSettings._get('second_owner'):
+                    groupSettings._set(power=1)
                     client.msg(
-                        TextStatement(f'{botSettings.get("name")}开机成功！')
+                        TextStatement(f'{botSettings._get("name")}开机成功！')
                     ).send()
                 else:
                     client.msg(
@@ -200,9 +202,9 @@ def requestInit(se: dict, uuid: str):
                         TextStatement('就你？先拿到管理员再说吧！')
                     ).send()
             elif message:
-                if (f'[CQ:at,qq={botSettings.get("myselfqn")}]' in message) or (botSettings.get('name') in message) or ('机器人' in message):
+                if (f'[CQ:at,qq={botSettings._get("myselfqn")}]' in message) or (botSettings._get('name') in message) or ('机器人' in message):
                     client.msg(
-                        TextStatement(f'{botSettings.get("name")}还没有开机哦~', 1),
+                        TextStatement(f'{botSettings._get("name")}还没有开机哦~', 1),
                         TextStatement('发送 开机 可以开启机器人！')
                     ).send()
             banwords.check(False)
@@ -240,97 +242,62 @@ def requestInit(se: dict, uuid: str):
         for i in Cache.get('messageListenerList', []):
             pbf.checkPromiseAndRun(i)
         
-        if se.get('channel_id') == None and gid != None:
-            # 防刷屏 TODO 该内容最好移动到查建中
-            messagelist = Cache.get('messagelist', [])
-            mlob = utils.findObject('qn', gid, messagelist)
-            mlo = mlob.get('object')
-            if mlo == 404:
-                messagelist.append({'qn':gid, 'uid':uid, 'times':1})
-            else:
-                arrnum = mlob.get('num')
-                if mlo.get('uid') == uid:
-                    if mlo.get('times') >= int(settings.get('AntiswipeScreen')):
-                        messagelist[arrnum]['times'] = 1
-                        if se.get('sender').get('role') == "member":
-                            datajson = client.CallApi('set_group_ban', {"group_id":gid,"user_id":uid,"duration":600})
-                            if datajson['status'] != 'ok':
-                                client.msg(
-                                    FaceStatement(151),
-                                    TextStatement('检测到刷屏，但禁言失败！')
-                                ).send()
-                            else:
-                                client.msg(
-                                    FaceStatement(54),
-                                    TextStatement('检测到刷屏，已禁言！')
-                                ).send()
-                    else:
-                        messagelist[arrnum]['times'] += 1
-                    # 禁言警告
-                    if mlo.get('times') == int(settings.get('AntiswipeScreen'))-1 and se.get('sender').get('role') == "member":
-                        client.msg(
-                            TextStatement('刷屏禁言警告', 1),
-                            TextStatement('请不要连续发送消息超过设定数量！')
-                        ).send()
-                else:
-                    messagelist[arrnum]['times'] = 1
-                    messagelist[arrnum]['uid'] = uid
-            Cache.set('messagelist', messagelist)
-        
         commandPluginsList = Cache.get('commandPluginsList')
         
         p('Handle events finished.')
         # 跟班模式
         only_for_uid = True
         if se.get("group_id"):
-            if botSettings.get("only_for_uid") and botSettings.get("only_for_uid") == uid:
+            if settings._get('only_for_uid') is None:
+                settings._set(only_for_uid=' ')
+            if botSettings._get("only_for_uid") and botSettings._get("only_for_uid") == uid:
                 only_for_uid = False
-            if len(settings.get("only_for_uid")) != 0 and str(uid) in settings.get("only_for_uid").split():
+            if len(settings._get("only_for_uid").split()) != 0 and str(uid) in settings._get("only_for_uid").split():
                 only_for_uid = False
-            if (not botSettings.get("only_for_uid")) and (len(settings.get("only_for_uid")) == 0):
+            if (not botSettings._get("only_for_uid")) and (len(settings._get("only_for_uid")) == 0):
                 only_for_uid = False
             if uid == yamldata.get("chat").get("owner"):
                 only_for_uid = False
         else:
             only_for_uid = False
         
-        if uid != botSettings.get('owner') and se.get('channel_id') == None and gid == None and botSettings.get("reportPrivate"):
+        if uid != botSettings._get('owner') and se.get('channel_id') == None and gid == None and botSettings._get("reportPrivate"):
             client.msg(
                 FaceStatement(151),
                 TextStatement('主人，有人跟我说话话~', 1),
                 TextStatement(f'内容为：{message}', 1),
                 TextStatement(f'回复请对我说：回复|{se.get("user_id")}|{se.get("message_id")}|<回复内容>')
-            ).custom(botSettings.get('owner'))
-            if uid != botSettings.get('second_owner'):
+            ).custom(botSettings._get('owner'))
+            if uid != botSettings._get('second_owner'):
                 client.msg(
                     FaceStatement(151),
                     TextStatement('副主人，有人跟我说话话~', 1),
                     TextStatement(f'内容为：{message}', 1),
                     TextStatement(f'回复请对我说：回复|{se.get("user_id")}|{se.get("message_id")}|<回复内容>')
-                ).custom(botSettings.get('second_owner'))
+                ).custom(botSettings._get('second_owner'))
         
-        if '[CQ:at,qq='+str(botSettings.get('owner'))+']' in message and botSettings.get("reportAt"):
+        if '[CQ:at,qq='+str(botSettings._get('owner'))+']' in message and botSettings._get("reportAt"):
             client.msg(
                 FaceStatement(151),
                 TextStatement('主人，有人艾特你~', 1),
                 TextStatement(f'消息内容：{message}', 1),
                 TextStatement(f'来自群：{gid}', 1),
                 TextStatement(f'来自用户：{uid}')
-            ).custom(botSettings.get('owner'))
+            ).custom(botSettings._get('owner'))
             
-        if '[CQ:at,qq='+str(botSettings.get('second_owner'))+']' in message and botSettings.get("reportAt"):
+        if '[CQ:at,qq='+str(botSettings._get('second_owner'))+']' in message and botSettings._get("reportAt"):
             client.msg(
                 FaceStatement(151),
                 TextStatement('副主人，有人艾特你~', 1),
                 TextStatement(f'消息内容：{message}', 1),
                 TextStatement(f'来自群：{gid}', 1),
                 TextStatement(f'来自用户：{uid}')
-            ).custom(botSettings.get('second_owner'))
+            ).custom(botSettings._get('second_owner'))
         
-        if (f'[CQ:at,qq={botSettings.get("myselfqn")}]' in message) and (userCoin == -1) and not only_for_uid:
+        if (f'[CQ:at,qq={botSettings._get("myselfqn")}]' in message) and (userCoin == -1) and not only_for_uid:
             client.msg(
                 Statement('reply', id=se.get('message_id')),
-                TextStatement(f'{botSettings.get("name")}想起来你还没有注册哦~',1),
+                TextStatement(f'{botSettings._get("name")}想起来你还没有注册哦~',1),
                 TextStatement('发送“注册”可以让机器人认识你啦QAQ')
             ).send()
         
@@ -342,14 +309,6 @@ def requestInit(se: dict, uuid: str):
                 datajson = dataa.get('data').get('texts')
                 for i in datajson:
                     message += i.get('text')
-        except Exception:
-            pass
-        
-        try:
-            if gid != None:
-                if settings.get('increase_verify') != 0:
-                    if pbf.execPlugin('basic.getVerifyStatus()') == True and '人机验证 ' not in message:
-                        client.CallApi('delete_msg', {'message_id':se.get('message_id')})
         except Exception:
             pass
         
@@ -389,12 +348,12 @@ def requestInit(se: dict, uuid: str):
                 noticeFlag = True
             return False
         
-        atStr = '[CQ:at,qq='+str(botSettings.get('myselfqn'))+'] '
+        atStr = '[CQ:at,qq='+str(botSettings._get('myselfqn'))+'] '
         if message[0:len(atStr)] == atStr:
             message = message.replace(atStr, '', 1)
         
-        if settings.get("v_command"):
-            v_command_list = settings.get("v_command").split()
+        if settings._get("v_command"):
+            v_command_list = settings._get("v_command").split()
         else:
             v_command_list = []
         if (not only_for_uid) or (v_command_list):
@@ -414,62 +373,12 @@ def requestInit(se: dict, uuid: str):
         if noticeFlag and not only_for_uid:
             client.msg(TextStatement("请注意指令每一部分之间有一个空格！！！")).send()
         
-        if message[0:10] == '[CQ:reply,' and '撤回' in message:
-            if uid == botSettings.get('owner') or uid == botSettings.get('second_owner') or se.get('sender').get('role') != 'member':
-                reply_id = CQCode(message).get('id', type='reply')
-                client.CallApi('delete_msg', {'message_id':reply_id})
-                client.CallApi('delete_msg', {'message_id':se.get('message_id')})
-                return 
-            else:
-                client.msg(TextStatement('[CQ:face,id=151] 就你？先拿到管理员再说吧！')).send()
-        
-        # 违禁词检查
-        if settings != None:
-            weijinFlag = 1 if settings.get('weijinCheck') else 0
-        else:
-            weijinFlag = 1
-        if banwords.check(weijinFlag) == True and not only_for_uid:
-            return 'OK.'
-        
-        try:
-            # 关键词回复
-            if settings != None:
-                kwFlag = 1 if settings.get('keywordReply') else 0
-            else:
-                kwFlag = 1
-            if kwFlag and not only_for_uid:
-                keywordlist = Cache.get('keywordList').get(uuid, [])
-                for i in keywordlist:
-                    replyFlag = False
-                    if userCoin >= i.get('coin') and (i.get("qn") == 0 or gid == i.get("qn")):
-                        replyFlag = True
-                    if replyFlag == True:
-                        replyKey = regex.replace(i.get('key'))
-                        if regex.pair(replyKey, message):
-                            regex.send(i.get('value'))
-        except Exception:
-            logger.warn(f'{traceback.format_exc()}')
-        
         # 分类菜单
         for i in menu.getModedMenu():
             menuStr = i.replace(' ', '')
             if message[0:len(menuStr)] == menuStr:
                 p(f'Send SingleMenu: {i}')
                 menu.sendSingleMenu(i)
-        
-        # 回复
-        if not only_for_uid:
-            if gid != None or cid != None:
-                if gid != None:
-                    randnum = settings.get('replyPercent')
-                elif cid != None:
-                    randnum = 100
-                rand = random.randint(1, randnum)
-                if (rand == 1) or ('[CQ:at,qq='+str(botSettings.get('myselfqn'))+']' in message):
-                    pbf.data.message = pbf.data.se['message'] = pbf.data.message.replace('[CQ:at,qq='+str(botSettings.get('myselfqn'))+']', "")
-                    pbf.reply()
-            else:
-                pbf.reply()
 
 def loadCache(**kwargs):
     '''在对应键不存在的时候设置缓存'''
