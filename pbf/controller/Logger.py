@@ -21,9 +21,8 @@ class Logger:
         print(str)
 
         fileName = now.strftime("./logs/%Y-%m-%d.log")
-        f = open(fileName, "a")
-        f.write(str)
-        f.close()
+        with open(fileName, "a") as f:
+            f.write(str)
     
     def error(self, message: str, *args) -> None:
         self.log("ERROR", message)

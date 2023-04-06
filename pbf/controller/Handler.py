@@ -164,7 +164,7 @@ def requestInit(se: dict, uuid: str):
         userCoin = -1
         isGlobalBanned = None
     
-    pluginsList = BotPluginsModel(uuid=uuid)._get('data')
+    pluginsList = BotPluginsModel(uuid=uuid)._get('data', default=[])
     
     struct = Struct(
         args = args,
@@ -172,6 +172,7 @@ def requestInit(se: dict, uuid: str):
         botSettings = botSettings,
         userCoin = userCoin,
         isGlobalBanned = isGlobalBanned,
+        groupSettings = groupSettings,
         userInfo = userInfo,
         pluginsList = pluginsList,
         se = se,

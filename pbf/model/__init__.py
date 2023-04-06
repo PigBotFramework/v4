@@ -132,8 +132,8 @@ class ModelBase:
         del self
         return None
 
-    def _get(self, key: str, *args, **kwargs):
-        return self.cache.get(key, *args, **kwargs)
+    def _get(self, key: str, default=None, *args, **kwargs):
+        return self.cache.get(key, default=default, *args, **kwargs)
     
     def _insert(self, **kwargs):
         # 在缓存中新增
