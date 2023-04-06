@@ -14,4 +14,4 @@ class GroupSettingsModel(ModelBase):
     def power(self):
         return 'int(2) NOT NULL DEFAULT \'1\''
     def only_for_uid(self):
-        return 'varchar(255) NOT NULL DEFAULT \' \''
+        return 'varchar(255) DEFAULT \' \''

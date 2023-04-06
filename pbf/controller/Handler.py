@@ -150,7 +150,7 @@ def requestInit(se: dict, uuid: str):
     args = se.get("message").split() if se.get('message') else None # 初始化参数
     messageType = 'cid' if se.get('channel_id') else 'qn' # 消息来源（频道或群组）
     botSettings = BotSettingsModel(uuid=uuid) # 机器人实例设置
-    groupSettings = GroupSettingsModel(uuid=uuid, qn=se.get('group_id'))
+    groupSettings = GroupSettingsModel(uuid=uuid, qn=se.get('group_id'), only_for_uid='')
     if se.get('user_id'):
         userInfo = UserInfoModel(qn=se.get('user_id'), uuid=uuid, value=0)
         userCoin = userInfo._get('value', -1)

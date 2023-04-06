@@ -57,6 +57,8 @@ class ModelBase:
             i = getattr(self, i)
             desc = i.__doc__
             default = i()
+            if isinstance(default, tuple) or isinstance(default, list):
+                default = default[0]
             _type = type(name)
             self.col.append({
                 "desc": desc,
@@ -92,7 +94,7 @@ class ModelBase:
         flag: bool = False
         for i in self.map:
             if flag:
-                self.sql_whereCase += ", "
+                self.sql_whereCase += " AND "
             else:
                 flag = True
             self.sql_whereCase += "`{}` = %s".format(i)
@@ -150,7 +152,12 @@ class ModelBase:
         # 更新到同步列表
         insertList: list = []
         for i in self.col:
-            insertList.append(kwargs.get(i.get('name')))
+            v = kwargs.get(i.get('name'))
+            if v is None:
+                _v = getattr(self, i.get('name'))()
+                if isinstance(_v, tuple) or isinstance(_v, list):
+                    v = _v[1]
+            insertList.append(v)
         self.format_insert.append(insertList)
         return self
     
@@ -209,6 +216,7 @@ class ModelBase:
             for i in self.map:
                 ob = self.args.get(i)
                 strr += f"[\"{ob}\"]" if isinstance(ob, str) else f"[{eval('self.args.get(i)')}]"
+            print('strr', strr)
             exec(f"Cache.cacheList{strr} = {eval(str(self.cache))}")
         return self
     
