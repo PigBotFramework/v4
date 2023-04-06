@@ -133,7 +133,8 @@ class ModelBase:
         return None
 
     def _get(self, key: str, default=None, *args, **kwargs):
-        return self.cache.get(key, default=default, *args, **kwargs)
+        data = self.cache.get(key, *args, **kwargs)
+        return data if data is not None else default
     
     def _insert(self, **kwargs):
         # 在缓存中新增
