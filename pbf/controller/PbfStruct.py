@@ -1,6 +1,8 @@
-'''
-This is the struct of data
-'''
+from ..model.BotPluginsModel import BotPluginsModel
+from ..model.BlackListModel import BlackListModel
+from ..model.BotSettingsModel import BotSettingsModel
+from ..model.GroupSettingsModel import GroupSettingsModel
+from ..model.UserInfoModel import UserInfoModel
 import yaml
 # 打开yaml文件
 fs = open("data.yaml",encoding="UTF-8")
@@ -48,9 +50,9 @@ def mapDictToList(ob, key: str):
 class Struct:
     args: list = []
     messageType: str = 'qn'
-    botSettings: dict = {}
+    botSettings: BotSettingsModel = None
     userCoin: int = -1
-    userInfo: dict = {}
+    userInfo: UserInfoModel = None
     pluginsList: list = []
     port: int = 1000
     se: dict = {}
@@ -59,7 +61,7 @@ class Struct:
     isGlobalBanned: bool = False
     uuid: str = None
     runningProgram: str = "BOT"
-    groupSettings: dict = {}
+    groupSettings: GroupSettingsModel = None
 
     def set(self, key: str, value):
         setattr(self, key, value)
