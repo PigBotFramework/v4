@@ -101,6 +101,28 @@ class PBF:
             return getattr(instance, methodName)()
         except Exception:
             self.logger.error(traceback.format_exc())
+    
+    def getUidOnly(self):
+        # 跟班模式
+        settings = self.data.groupSettings
+        botSettings = self.data.botSettings
+        se = self.data.se
+        uid = se.get('user_id')
+        only_for_uid = True
+        if se.get("group_id"):
+            if settings._get('only_for_uid') is None:
+                settings._set(only_for_uid=' ')
+            if botSettings._get("only_for_uid") and botSettings._get("only_for_uid") == uid:
+                only_for_uid = False
+            if len(settings._get("only_for_uid").split()) != 0 and str(uid) in settings._get("only_for_uid").split():
+                only_for_uid = False
+            if (not botSettings._get("only_for_uid")) and (len(settings._get("only_for_uid")) == 0):
+                only_for_uid = False
+            if uid == yamldata.get("chat").get("owner"):
+                only_for_uid = False
+        else:
+            only_for_uid = False
+        return only_for_uid
         
     def checkPromiseAndRun(self, i, echoFlag=False, senderFlag=False, content=None):
         uid = self.data.se.get('user_id')

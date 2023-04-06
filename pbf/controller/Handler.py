@@ -181,8 +181,6 @@ def requestInit(se: dict, uuid: str):
     p(f'Struct was created.')
     
     pbf = PBF(struct)
-    logger = Logger(struct)
-    regex = Regex(struct)
     client = Client(struct)
     banwords = BanWords(struct)
     menu = Menu(struct)
@@ -217,7 +215,6 @@ def requestInit(se: dict, uuid: str):
     p('Passed banned check')
 
     gid = se.get('group_id')
-    cid = se.get('channel_id')
     uid = se.get('user_id')
     settings = groupSettings
 
@@ -245,21 +242,7 @@ def requestInit(se: dict, uuid: str):
         commandPluginsList = Cache.get('commandPluginsList')
         
         p('Handle events finished.')
-        # 跟班模式
-        only_for_uid = True
-        if se.get("group_id"):
-            if settings._get('only_for_uid') is None:
-                settings._set(only_for_uid=' ')
-            if botSettings._get("only_for_uid") and botSettings._get("only_for_uid") == uid:
-                only_for_uid = False
-            if len(settings._get("only_for_uid").split()) != 0 and str(uid) in settings._get("only_for_uid").split():
-                only_for_uid = False
-            if (not botSettings._get("only_for_uid")) and (len(settings._get("only_for_uid")) == 0):
-                only_for_uid = False
-            if uid == yamldata.get("chat").get("owner"):
-                only_for_uid = False
-        else:
-            only_for_uid = False
+        only_for_uid = pbf.getUidOnly()
         
         if uid != botSettings._get('owner') and se.get('channel_id') == None and gid == None and botSettings._get("reportPrivate"):
             client.msg(
