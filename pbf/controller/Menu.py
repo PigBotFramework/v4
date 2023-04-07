@@ -4,6 +4,7 @@ from . import Cache
 from ..statement.FaceStatement import FaceStatement
 from ..statement.TextStatement import TextStatement
 from ..model.BotPluginsModel import BotPluginsModel
+import json
 
 class Menu:
     data: Struct = None
@@ -15,7 +16,7 @@ class Menu:
     
     def getModedMenu(self):
         pluginsList = Cache.get('commandPluginsList')
-        botPluginsList = BotPluginsModel(uuid=self.data.uuid)._get('data')
+        botPluginsList = json.loads(BotPluginsModel(uuid=self.data.uuid)._get('data'))
         botPluginsList = botPluginsList if botPluginsList is not None else []
         commandModedList = []
 
@@ -33,7 +34,7 @@ class Menu:
         menuList = self.getModedMenu()
         messageList = [
             FaceStatement(151),
-            TextStatement(f'{self.data.botSettings.get("name")}-菜单', 1)
+            TextStatement(f'{self.data.botSettings._get("name")}-菜单', 1)
         ]
         myIter = 0
 
@@ -51,7 +52,7 @@ class Menu:
         messageList.append(TextStatement(' ', 1))
         if myIter == 1:
             messageList.append(TextStatement(' ', 1))
-        messageList.append(TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings.get('name'))))
+        messageList.append(TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name'))))
         
         msg = self.client.msg(messageList)
         # msg.debug()
@@ -64,7 +65,7 @@ class Menu:
         
         messageList = [
             FaceStatement(151),
-            TextStatement(f'{self.data.botSettings.get("name")}-菜单：{mode}', 1)
+            TextStatement(f'{self.data.botSettings._get("name")}-菜单：{mode}', 1)
         ]
 
         for i in commandList:
@@ -89,7 +90,7 @@ class Menu:
             
         messageList.append(TextStatement(' ', 1))
         messageList.append(TextStatement('解锁更多功能请机器人主人安装其他插件', 1))
-        messageList.append(TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings.get('name'))))
+        messageList.append(TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name'))))
 
         msg = self.client.msg(messageList)
         # msg.debug()

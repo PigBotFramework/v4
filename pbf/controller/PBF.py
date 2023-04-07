@@ -53,6 +53,7 @@ class PBF:
         self.utils = Utils(self.data)
         self.logger = Logger(self.data)
         self.regex = Regex(self.data)
+        self.banwords = BanWords(self.data)
     
     def __str__(self):
         return f'<PBF Program:{self.data.runningProgram} Uuid:{self.data.uuid}>'
@@ -63,26 +64,6 @@ class PBF:
     def changeRunningProgram(self, runningProgram: str):
         self.data.runningProgram = runningProgram
         self.logger.setData(self.data)
-
-    def groupInit(self):
-        gid = self.data.se.get('group_id')
-        if gid == None:
-            return 
-        Mysql.commonx('INSERT INTO `botSettings` (`qn`, `uuid`, `power`, `connectQQ`) VALUES (%s, %s, %s, %s);', (gid, self.data.uuid, self.data.botSettings.get('defaultPower'), self.data.se.get("user_id")))
-        if self.data.botSettings.get('defaultPower'):
-            self.client.msg(
-                FaceStatement(189),
-                TextStatement('机器人已初始化，发送“菜单”可以查看全部指令', 1),
-                TextStatement('发送“群聊设置”可以查看本群的初始设置', 1),
-                TextStatement('如果不会使用机器人请发送“新手教程”查看教程！')
-            ).send()
-        else:
-            self.client.msg(
-                FaceStatement(189),
-                TextStatement('机器人已初始化，当前已关机，发送“开机”可以开启机器人'),
-                TextStatement('开机后，发送“菜单”可以查看指令！')
-            ).send()
-        Cache.refreshFromSql('groupSettings')
     
     def reply(self):
         pass

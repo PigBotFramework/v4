@@ -2,7 +2,7 @@ from ..controller import Cache, Mysql
 
 class ModelBase:
     sql_update: str = "UPDATE `{}` SET {} WHERE {}"
-    sql_insert: str = "INSERT INTO `{}` ({}) VALUES {}"
+    sql_insert: str = "REPLACE INTO `{}` ({}) VALUES {}"
     sql_delete: str = "DELETE FROM `{}` WHERE {}"
     sql_createTable: str = "CREATE TABLE IF NOT EXISTS `{}`({})"
     sql_dropTable: str = "DROP TABLE IF EXISTS `{}`"
@@ -30,14 +30,16 @@ class ModelBase:
 
     def _getIndexStr(self, i):
         strr: str = f"['{self._c()}']"
+        if Cache.cacheList.get(self._c()) is None:
+            Cache.cacheList[self._c()] = dict()
         listt: list = self.map
-        dictOb = Cache.cacheList
+        dictOb = Cache.cacheList.get(self._c())
         for l in listt:
             ob = i.get(l)
-            strr += f"[\"{ob}\"]" if isinstance(ob, str) else f"[{eval('i.get(l)')}]"
+            strr += f"[\"{ob}\"]"
             dictOb = dictOb.get(str(i.get(l)))
             if dictOb == None:
-                exec(f"Cache.cacheList{strr} = {'{}'}")
+                exec(f"Cache.cacheList{strr} = dict()")
                 dictOb = {}
             
         return strr
@@ -124,8 +126,7 @@ class ModelBase:
         data = Mysql.selectx(sql)
         for i in data:
             strr = self._getIndexStr(i)
-            exec(f"Cache.cacheList{strr} = {eval(str(i))}")
-        
+            exec(f"Cache.cacheList{strr} = dict(i)")
         return self
     
     def _dropTable(self):
@@ -136,12 +137,16 @@ class ModelBase:
 
     def _get(self, key: str, default=None, *args, **kwargs):
         data = self.cache.get(key, *args, **kwargs)
+        if data is None and default is None:
+            _default = getattr(self, key)()
+            if isinstance(_default, tuple) or isinstance(_default, list):
+                default = _default[1]
         return data if data is not None else default
     
     def _insert(self, **kwargs):
         # 在缓存中新增
         strr = self._getIndexStr(kwargs)
-        exec(f"Cache.cacheList{strr} = {eval(str(kwargs))}")
+        exec(f"Cache.cacheList{strr} = dict(kwargs)")
         
         self.exists = True
         self.delFlag = False
@@ -212,11 +217,10 @@ class ModelBase:
             
             self.cache[k] = v
             
-            strr: str = ""
+            strr: str = f"['{self._c()}']"
             for i in self.map:
                 ob = self.args.get(i)
-                strr += f"[\"{ob}\"]" if isinstance(ob, str) else f"[{eval('self.args.get(i)')}]"
-            print('strr', strr)
+                strr += f"[\"{ob}\"]"
             exec(f"Cache.cacheList{strr} = {eval(str(self.cache))}")
         return self
     
@@ -255,7 +259,7 @@ class ModelBase:
             vsl += i
         
         Mysql.commonx(self.sql_insert.format(self._getTableName(), colname, vs), tuple(vsl))
-        
+
     def __update(self):
         if not self.format_update:
             return False
@@ -291,11 +295,12 @@ class ModelBase:
         iter = 0
         for i in self.map:
             _cache = self.cache
-            self.cache = self.cache.get(self.args.get(i))
+            self.cache = self.cache.get(str(self.args.get(i)))
             if self.cache == None:
                 if insertFlag:
                     self._insert(**kwargs)
                     self.exists = False
+                    self.cache = _cache.get(str(self.args.get(i)))
                 else:
                     raise Exception("Key Not Found.")
             iter += 1

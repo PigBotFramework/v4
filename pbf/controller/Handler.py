@@ -34,7 +34,7 @@ def reloadPlugins(flag: bool=False):
     pluginsList = getPluginsList()
     pluginsMappedByName = {}
     
-    # 引入
+    # Load Plugins
     for i in pluginsList:
         p('Load Plugin:', i)
         try:
@@ -50,7 +50,6 @@ def reloadPlugins(flag: bool=False):
             }
             pluginsData.append(clist)
             pluginsMappedByName[i] = clist
-            
             
             with getattr(module, i)(None) as v:
                 for cmd in v:
@@ -77,15 +76,21 @@ def reloadPlugins(flag: bool=False):
             p(f'An error was made by loading plugins: {i}\n{traceback.format_exc()}')
             pluginsList.remove(i)
     
-    # Cache.connectSql('keywordList', 'SELECT * FROM `botKeyword` WHERE `state` = 0', mapDictToList, 'uuid')
-    # Cache.connectSql('botBotconfig', 'SELECT * FROM `botBotconfig`', mapDict, 'uuid')
-    # Cache.connectSql('botWeijin', "SELECT * FROM `botWeijin` WHERE `state`=0 or `state`=3;", noMap)
-    # Cache.connectSql('botReplace', "SELECT * FROM `botReplace`", noMap)
-    # Cache.connectSql('settingName', "SELECT * FROM `botSettingName`", noMap)
-    # Cache.connectSql('groupSettings', 'SELECT * FROM `botSettings`', mapDoubleDict, 'qn uuid')
-    # Cache.connectSql('userCoin', "SELECT * FROM `botCoin`", mapDict, 'qn')
-    # Cache.connectSql('botPluginsList', 'SELECT * FROM `botPlugins`', mapDictToList, 'uuid')
-    # Cache.connectSql('globalBanned', "SELECT * FROM `botQuanping`", mapDict, 'qn')
+    # Load Banwords
+    Mysql.commonx("""
+CREATE TABLE IF NOT EXISTS `bot_weijin` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `content` varchar(255) NOT NULL,
+  `time` int(11) NOT NULL,
+  `state` int(11) NOT NULL,
+  `qn` bigint(20) NOT NULL,
+  `uuid` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """)
+    Cache.connectSql('botWeijin', "SELECT * FROM `bot_weijin` WHERE `state`=0 or `state`=3;", noMap)
+
+    # Load Caches
     loadCache(
         commandModedList = commandModedList,
         commandPluginsList = commandPluginsList,
@@ -150,7 +155,7 @@ def requestInit(se: dict, uuid: str):
     args = se.get("message").split() if se.get('message') else None # 初始化参数
     messageType = 'cid' if se.get('channel_id') else 'qn' # 消息来源（频道或群组）
     botSettings = BotSettingsModel(uuid=uuid) # 机器人实例设置
-    groupSettings = GroupSettingsModel(uuid=uuid, qn=se.get('group_id'), only_for_uid='')
+    groupSettings = GroupSettingsModel(uuid=uuid, qn=se.get('group_id'), connectQQ=se.get('user_id'))
     if se.get('user_id'):
         userInfo = UserInfoModel(qn=se.get('user_id'), uuid=uuid, value=0)
         userCoin = userInfo._get('value', -1)
@@ -164,7 +169,7 @@ def requestInit(se: dict, uuid: str):
         userCoin = -1
         isGlobalBanned = None
     
-    pluginsList = BotPluginsModel(uuid=uuid)._get('data', default=[])
+    pluginsList = json.loads(BotPluginsModel(uuid=uuid)._get('data', default=[]))
     
     struct = Struct(
         args = args,
@@ -244,46 +249,6 @@ def requestInit(se: dict, uuid: str):
         
         p('Handle events finished.')
         only_for_uid = pbf.getUidOnly()
-        
-        if uid != botSettings._get('owner') and se.get('channel_id') == None and gid == None and botSettings._get("reportPrivate"):
-            client.msg(
-                FaceStatement(151),
-                TextStatement('主人，有人跟我说话话~', 1),
-                TextStatement(f'内容为：{message}', 1),
-                TextStatement(f'回复请对我说：回复|{se.get("user_id")}|{se.get("message_id")}|<回复内容>')
-            ).custom(botSettings._get('owner'))
-            if uid != botSettings._get('second_owner'):
-                client.msg(
-                    FaceStatement(151),
-                    TextStatement('副主人，有人跟我说话话~', 1),
-                    TextStatement(f'内容为：{message}', 1),
-                    TextStatement(f'回复请对我说：回复|{se.get("user_id")}|{se.get("message_id")}|<回复内容>')
-                ).custom(botSettings._get('second_owner'))
-        
-        if '[CQ:at,qq='+str(botSettings._get('owner'))+']' in message and botSettings._get("reportAt"):
-            client.msg(
-                FaceStatement(151),
-                TextStatement('主人，有人艾特你~', 1),
-                TextStatement(f'消息内容：{message}', 1),
-                TextStatement(f'来自群：{gid}', 1),
-                TextStatement(f'来自用户：{uid}')
-            ).custom(botSettings._get('owner'))
-            
-        if '[CQ:at,qq='+str(botSettings._get('second_owner'))+']' in message and botSettings._get("reportAt"):
-            client.msg(
-                FaceStatement(151),
-                TextStatement('副主人，有人艾特你~', 1),
-                TextStatement(f'消息内容：{message}', 1),
-                TextStatement(f'来自群：{gid}', 1),
-                TextStatement(f'来自用户：{uid}')
-            ).custom(botSettings._get('second_owner'))
-        
-        if (f'[CQ:at,qq={botSettings._get("myselfqn")}]' in message) and (userCoin == -1) and not only_for_uid:
-            client.msg(
-                Statement('reply', id=se.get('message_id')),
-                TextStatement(f'{botSettings._get("name")}想起来你还没有注册哦~',1),
-                TextStatement('发送“注册”可以让机器人认识你啦QAQ')
-            ).send()
         
         try:
             cq = CQCode(message).get('file', type='image')

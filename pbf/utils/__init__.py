@@ -77,7 +77,6 @@ class Utils:
         if not uuid:
             raise ValueError('Please give a non-empty string as a uuid.')
         botOb = BotSettingsModel(uuid=uuid)
-        print(botOb._get('secret'))
         if botOb.exists == False:
             botOb._delete()
             del botOb
