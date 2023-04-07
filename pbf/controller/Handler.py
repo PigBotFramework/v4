@@ -220,8 +220,6 @@ def requestInit(se: dict, uuid: str):
         return 
     p('Passed banned check')
 
-    gid = se.get('group_id')
-    uid = se.get('user_id')
     settings = groupSettings
 
     if se.get('post_type') == 'notice':

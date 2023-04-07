@@ -1,6 +1,7 @@
 *.sh
 *.log
 resources/
+*.pyc
 __pycache__
 *.out
 plugins/
