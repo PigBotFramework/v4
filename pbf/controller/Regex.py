@@ -1,18 +1,17 @@
 from .Client import Client
 from .PbfStruct import Struct
 from ..statement.TextStatement import TextStatement
-from . import Cache
+from ..model.KeywordReplaceModel import KeywordReplaceModel
 
 class Regex:
     client: Client = None
     data: Struct = None
     kwrList: list = None
-    
 
     def __init__(self, data: Struct):
         self.data = data
         self.client = Client(data)
-        self.kwrList = Cache.get('botReplace')
+        self.kwrList = KeywordReplaceModel()._getAll()
 
     def exceptx(self, replyKey, message):
         if ('$1' in replyKey) and ('$2' in replyKey):

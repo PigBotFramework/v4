@@ -16,7 +16,7 @@ class Coin:
 
     def add(self, value=None):
         if value == None:
-            value=random.randint(self.data.botSettings.get('lowRandomCoin'), self.data.botSettings.get('highRandomCoin'))
+            value=random.randint(self.data.botSettings._get('lowRandomCoin'), self.data.botSettings._get('highRandomCoin'))
         
         uid = self.data.se.get('user_id')
         
@@ -30,7 +30,7 @@ class Coin:
         
     def remove(self, value=None):
         if value == None:
-            value = random.randint(self.data.botSettings.get('lowRandomCoin'), self.data.botSettings.get('highRandomCoin'))
+            value = random.randint(self.data.botSettings._get('lowRandomCoin'), self.data.botSettings._get('highRandomCoin'))
         
         uid = self.data.se.get('user_id')
         

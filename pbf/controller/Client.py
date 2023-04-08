@@ -68,8 +68,8 @@ class Msg(Client):
             if retryFlag:
                 self.raw('消息发送失败，尝试转图片发送...', retryFlag=False)
                 self.data.message = content
-                self.data.se['user_id'] = self.data.botSettings.get('myselfqn')
-                self.data.se['sender']['nickname'] = self.data.botSettings.get('name')
+                self.data.se['user_id'] = self.data.botSettings._get('myselfqn')
+                self.data.se['sender']['nickname'] = self.data.botSettings._get('name')
                 return self.image()
         else:
             return dataa.get('data').get('message_id')
@@ -164,7 +164,7 @@ class Msg(Client):
         botSettings = self.data.botSettings
         # 随机好感度
         try:
-            if random.randint(1, botSettings.get('coinPercent')) == 1 and self.coinFlag:
+            if random.randint(1, botSettings._get('coinPercent')) == 1 and self.coinFlag:
                 userCoin = self.utils.coin.add()
                 if userCoin != False:
                     return TextStatement('\n\n『谢谢陪我聊天，好感度加{0}』'.format(userCoin))
@@ -204,8 +204,8 @@ class Msg(Client):
                 if self.retryFlag:
                     self.raw('消息发送失败，尝试转图片发送...', retryFlag=False)
                     self.data.message = self.getRawText()
-                    self.data.se['user_id'] = botSettings.get('myselfqn')
-                    self.data.se['sender']['nickname'] = botSettings.get('name')
+                    self.data.se['user_id'] = botSettings._get('myselfqn')
+                    self.data.se['sender']['nickname'] = botSettings._get('name')
                     return self.image()
             else:
                 return dataa.get('data').get('message_id')

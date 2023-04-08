@@ -117,7 +117,7 @@ class PBF:
         if promise == 'anyone':
             return self.execPluginThread(evalFunc)
         elif promise == 'owner':
-            if uid == botSettings.get('owner') or uid == botSettings.get('second_owner'):
+            if uid == botSettings._get('owner') or uid == botSettings._get('second_owner'):
                 return self.execPluginThread(evalFunc)
             elif echoFlag == True:
                 self.client.msg(
@@ -125,7 +125,7 @@ class PBF:
                     TextStatement('你不是我的主人，哼ꉂ(ˊᗜˋ*)')
                 ).send()
         elif promise == 'ro':
-            if uid == botSettings.get('owner'):
+            if uid == botSettings._get('owner'):
                 return self.execPluginThread(evalFunc)
             elif echoFlag == True:
                 self.client.msg(
@@ -151,7 +151,7 @@ class PBF:
                         TextStatement('就你？先拿到管理员再说吧！')
                     ).send()
             elif promise == 'ao':
-                if se.get('sender').get('role') != 'member' or uid == botSettings.get('owner') or uid == botSettings.get('second_owner'):
+                if se.get('sender').get('role') != 'member' or uid == botSettings._get('owner') or uid == botSettings._get('second_owner'):
                     return self.execPluginThread(evalFunc)
                 elif echoFlag == True:
                     self.client.msg(

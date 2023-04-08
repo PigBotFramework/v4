@@ -26,7 +26,6 @@ def reloadPlugins(flag: bool=False):
     requestListenerList = []
     metaListenerList = []
     messageListenerList = []
-    ChatterBotListener = [] # 已弃用 ChatterBot监听
     commandListenerList = [] # 后续的菜单都是遍历该数组生成
     pluginsData = []
     commandPluginsList = {} # 后续的指令下发都是遍历该数组
@@ -75,20 +74,6 @@ def reloadPlugins(flag: bool=False):
         except Exception:
             p(f'An error was made by loading plugins: {i}\n{traceback.format_exc()}')
             pluginsList.remove(i)
-    
-    # Load Banwords
-    Mysql.commonx("""
-CREATE TABLE IF NOT EXISTS `bot_weijin` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `content` varchar(255) NOT NULL,
-  `time` int(11) NOT NULL,
-  `state` int(11) NOT NULL,
-  `qn` bigint(20) NOT NULL,
-  `uuid` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    """)
-    Cache.connectSql('botWeijin', "SELECT * FROM `bot_weijin` WHERE `state`=0 or `state`=3;", noMap)
 
     # Load Caches
     loadCache(
@@ -100,7 +85,6 @@ CREATE TABLE IF NOT EXISTS `bot_weijin` (
         requestListenerList = requestListenerList,
         noticeListenerList = noticeListenerList,
         pluginsList = pluginsList,
-        ChatterBotListener = ChatterBotListener,
         pluginsData = pluginsData,
         pluginsMappedByName = pluginsMappedByName
     )
