@@ -1,6 +1,6 @@
-from . import ModelBase
+from . import DictModel
 
-class BlackListModel(ModelBase):
+class BlackListModel(DictModel):
     db_table = 'black_list'
     map = ['qn']
     format_createTable = ["PRIMARY KEY (`id`)"]

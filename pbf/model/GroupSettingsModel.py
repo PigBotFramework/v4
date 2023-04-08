@@ -1,6 +1,6 @@
-from . import ModelBase
+from . import DictModel
 
-class GroupSettingsModel(ModelBase):
+class GroupSettingsModel(DictModel):
     db_table = "group_settings"
     map = ['uuid', 'qn']
     format_createTable = ["PRIMARY KEY (`id`)"]

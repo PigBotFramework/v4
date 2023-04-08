@@ -1,6 +1,6 @@
-from . import ModelBase
+from . import DictModel
 
-class BotPluginsModel(ModelBase):
+class BotPluginsModel(DictModel):
     db_table = "bot_plugins"
     map = ['uuid']
     format_createTable = ["PRIMARY KEY (`id`)"]

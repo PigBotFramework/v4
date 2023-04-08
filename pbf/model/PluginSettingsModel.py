@@ -1,7 +1,7 @@
-from . import ModelBase
+from . import DictModel
 import time
 
-class PluginSettingsModel(ModelBase):
+class PluginSettingsModel(DictModel):
     db_table = 'plugin_settings'
     map = ['package_name', 'key']
     format_createTable = ["PRIMARY KEY (`id`)"]

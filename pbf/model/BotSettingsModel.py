@@ -1,6 +1,6 @@
-from . import ModelBase
+from . import DictModel
 
-class BotSettingsModel(ModelBase):
+class BotSettingsModel(DictModel):
     db_table = 'bot_settings'
     map = ['uuid']
     format_createTable = ["PRIMARY KEY (`id`)"]

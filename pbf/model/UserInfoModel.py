@@ -1,6 +1,6 @@
-from . import ModelBase
+from . import DictModel
 
-class UserInfoModel(ModelBase):
+class UserInfoModel(DictModel):
     db_table = 'user_info'
     map = ['qn']
     format_createTable = ["PRIMARY KEY (`id`)"]
