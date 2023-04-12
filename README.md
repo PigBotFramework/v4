@@ -16,10 +16,12 @@
   同是，您也可以非常方便地构建一个Statement：
   ```python
   from pbf.statement import Statement
+
   class AudioStatement(Statement):
     cqtype = 'audio'
     url: str = None
     file: str = None
+    
     def __init__(self, url, file):
       self.url = url
       self.file = file
@@ -35,15 +37,17 @@
 - 引入了Model，使数据储存读取更加便捷，易于维护。您无需再接触繁琐的SQL代码，只需要实现一个简单的Model类，然后便可轻松操作
   ```python
   from pbf.model import DictModel
+
   class Model(DictModel):
-    db_table = 'users
+    db_table = 'users'
     map = ['uid']
+
     def id(self):
       return 'int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY'
     def uid(self):
       return 'int(11) NOT NULL'
     def name(self):
-      return 'varchar(255) NOT NULL'
+      return 'varchar(255) NOT NULL', 'PigBot'
   ```
   然后可以通过便捷的方法修改数据或读取
   ```python

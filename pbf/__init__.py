@@ -1,2 +1,2 @@
-version = '4.1.18'
-dev_version = '0.1.13'
+version = '4.1.19'
+dev_version = '0.1.14'
