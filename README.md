@@ -68,7 +68,6 @@
       name = "test",
       usage = "test",
       permission = "anyone",
-      function = "foo@test",
       alias = ["别名1", "别名2"],
       description = "test",
       mode = "分类",

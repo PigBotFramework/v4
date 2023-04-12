@@ -40,6 +40,7 @@ pluginsList: list = getPluginsList()
 pluginsMappedByName: dict = {}
 pluginsLoading: bool = False
 pluginsPath: str = None
+methodName: str = None
 
 def _(key: str, *args, **kwargs) -> object:
     return globals()[key]
@@ -72,9 +73,8 @@ def reloadPlugins(flag: bool=False):
                 if l.startswith('_') or not callable(getattr(module, l)):
                     continue
                 try:
+                    globals()['methodName'] = l
                     getattr(module, l).__call__()
-                    if 'foo' in i:
-                        print('commandListenerList', _('commandListenerList'))
                 except Exception:
                     pass
         except Exception:
@@ -288,14 +288,12 @@ def requestInit(se: dict, uuid: str):
         else:
             v_command_list = []
 
-        print(commandPluginsList, pluginsList)
         if (not only_for_uid) or (v_command_list):
             for l in pluginsList:
                 if commandPluginsList.get(l.get('path')) == None:
                     continue
                 for i in commandPluginsList.get(l.get('path')):
                     # 识别指令
-                    print(i)
                     if (not only_for_uid) or (i.get("content").strip() in v_command_list):
                         if runCommand(i, i.name, message):
                             return 
