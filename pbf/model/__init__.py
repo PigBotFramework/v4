@@ -1,4 +1,5 @@
 try:
+    from functools import partialmethod
     from ..controller import Cache, Mysql
 except Exception:
     import sys
@@ -61,6 +62,7 @@ class ModelBase:
                 "default": f"`{name}` {default}",
                 "type": _type
             })
+
     
     def __update(self):
         pass

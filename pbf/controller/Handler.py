@@ -21,20 +21,34 @@ from ..model.BotSettingsModel import BotSettingsModel
 from ..model.GroupSettingsModel import GroupSettingsModel
 from ..model.UserInfoModel import UserInfoModel
 
+def getPluginsList():
+    pluginsList = os.listdir('plugins')
+    for dbtype in pluginsList[::]:
+        if os.path.isfile(os.path.join('plugins',dbtype)) or dbtype.startswith('__'):
+            pluginsList.remove(dbtype)
+    return pluginsList
+
+noticeListenerList: list = []
+requestListenerList: list = []
+metaListenerList: list = []
+messageListenerList: list = []
+commandListenerList: list = [] # 后续的菜单都是遍历该数组生成
+pluginsData: list = []
+commandPluginsList: dict = {} # 后续的指令下发都是遍历该数组
+commandModedList: dict = {} # 分类为索引，获取到某分类下的指令
+pluginsList: list = getPluginsList()
+pluginsMappedByName: dict = {}
+pluginsLoading: bool = False
+pluginsPath: str = None
+
+def _(key: str, *args, **kwargs) -> object:
+    return globals()[key]
+
 def reloadPlugins(flag: bool=False):
-    noticeListenerList = []
-    requestListenerList = []
-    metaListenerList = []
-    messageListenerList = []
-    commandListenerList = [] # 后续的菜单都是遍历该数组生成
-    pluginsData = []
-    commandPluginsList = {} # 后续的指令下发都是遍历该数组
-    commandModedList = {} # 分类为索引，获取到某分类下的指令
-    pluginsList = getPluginsList()
-    pluginsMappedByName = {}
-    
     # Load Plugins
-    for i in pluginsList:
+    globals()['pluginsLoading'] = True
+
+    for i in _('pluginsList'):
         p('Load Plugin:', i)
         try:
             module = importlib.import_module(f'plugins.{i}')
@@ -47,56 +61,42 @@ def reloadPlugins(flag: bool=False):
                 'cost': getattr(module, '_cost', 0.00),
                 'cwd': i
             }
-            pluginsData.append(clist)
-            pluginsMappedByName[i] = clist
-            
-            with getattr(module, i)(None) as v:
-                for cmd in v:
-                    # p(f'Plugin: {i} Cmds: {cmd.name} Type: {cmd.type}')
-                    if cmd.type == 'command':
-                        if commandPluginsList.get(i) == None:
-                            commandPluginsList[i] = []
-                        commandPluginsList[i].append(cmd)
+            _('pluginsData').append(clist)
+            _('pluginsMappedByName')[i] = clist
 
-                        if commandModedList.get(cmd.mode) == None:
-                            commandModedList[cmd.mode] = []
-                        commandModedList[cmd.mode].append(cmd)
+            p('Loading', i, '...')
+            module = getattr(module, i)
+            globals()['pluginsPath'] = i
 
-                        commandListenerList.append(cmd)
-                    elif cmd.type == 'meta':
-                        metaListenerList.append(cmd)
-                    elif cmd.type == 'notice':
-                        noticeListenerList.append(cmd)
-                    elif cmd.type == 'request':
-                        requestListenerList.append(cmd)
-                    elif cmd.type == 'message':
-                        messageListenerList.append(cmd)
+            for l in dir(module):
+                if l.startswith('_') or not callable(getattr(module, l)):
+                    continue
+                try:
+                    getattr(module, l).__call__()
+                    if 'foo' in i:
+                        print('commandListenerList', _('commandListenerList'))
+                except Exception:
+                    pass
         except Exception:
             p(f'An error was made by loading plugins: {i}\n{traceback.format_exc()}')
-            pluginsList.remove(i)
+            _('pluginsList').remove(i)
 
     # Load Caches
     loadCache(
-        commandModedList = commandModedList,
-        commandPluginsList = commandPluginsList,
-        commandListenerList = commandListenerList,
-        messageListenerList = messageListenerList, 
-        metaListenerList = metaListenerList,
-        requestListenerList = requestListenerList,
-        noticeListenerList = noticeListenerList,
-        pluginsList = pluginsList,
-        pluginsData = pluginsData,
-        pluginsMappedByName = pluginsMappedByName
+        commandModedList = _('commandModedList'),
+        commandPluginsList = _('commandPluginsList'),
+        commandListenerList = _('commandListenerList'),
+        messageListenerList = _('messageListenerList'), 
+        metaListenerList = _('metaListenerList'),
+        requestListenerList = _('requestListenerList'),
+        noticeListenerList = _('noticeListenerList'),
+        pluginsList = _('pluginsList'),
+        pluginsData = _('pluginsData'),
+        pluginsMappedByName = _('pluginsMappedByName')
     )
-    
-    return {"code":200}
 
-def getPluginsList():
-    pluginsList = os.listdir('plugins')
-    for dbtype in pluginsList[::]:
-        if os.path.isfile(os.path.join('plugins',dbtype)) or dbtype.startswith('__'):
-            pluginsList.remove(dbtype)
-    return pluginsList
+    globals()['pluginsLoading'] = False
+    return {"code":200}
 
 def openFile(path):
     with open(path, 'r') as f:
@@ -287,12 +287,15 @@ def requestInit(se: dict, uuid: str):
             v_command_list = settings._get("v_command").split()
         else:
             v_command_list = []
+
+        print(commandPluginsList, pluginsList)
         if (not only_for_uid) or (v_command_list):
             for l in pluginsList:
                 if commandPluginsList.get(l.get('path')) == None:
                     continue
                 for i in commandPluginsList.get(l.get('path')):
                     # 识别指令
+                    print(i)
                     if (not only_for_uid) or (i.get("content").strip() in v_command_list):
                         if runCommand(i, i.name, message):
                             return 
