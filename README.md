@@ -21,7 +21,7 @@
     cqtype = 'audio'
     url: str = None
     file: str = None
-    
+
     def __init__(self, url, file):
       self.url = url
       self.file = file
@@ -84,5 +84,10 @@
   
 ## PBFv4新架构
 PBFv4将采用`MSC（Model-Statement-Controller）`模式编写插件，与`MVC`不同之处在于将`View`更改为了`Statement`，不过其作用基本相同。  
-与`MVC`相同，`Model`部分主要控制数据的存取等。插件需要实现一个model类，来实现数据存取。自建的`Model`类需要继承`model.ModelBase`类，并可以轻松实现数据存取。具体详见开发文档。
+与`MVC`相同，`Model`部分主要控制数据的存取等。插件需要实现一个model类，来实现数据存取。自建的`Model`类需要继承`model.DictModel`类，并可以轻松实现数据存取。具体详见开发文档。
 自建的`Statement`类也需要继承`statement.Statement`类，具体详见开发文档。
+
+# 仓库信息
+- GitHub仓库：[PigBotFramework/v4](https://github.com/PigBotFramework/v4)  
+- PyPi Project：[PigBotFramework](https://pypi.org/project/PigBotFramework/)
+  在您的设备上执行`pip install --upgrade PigBotFramework`即可安装，在任意文件中即可导入`import pbf`
