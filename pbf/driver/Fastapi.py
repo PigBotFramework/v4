@@ -15,8 +15,7 @@ p = Handler.p
 requests.adapters.DEFAULT_RETRIES = 5
 
 description = '''
-> PigBotFramework is built on FastApi, all APIs are listed below and provide query parameters  
-**Notice: 以下接口默认使用1000处理器，其他处理器用法相同**
+> PigBotFramework is built on FastApi, all APIs are listed below and provide query parameters
 '''
 tags_metadata = [
     {

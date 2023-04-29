@@ -22,7 +22,9 @@ from ..model.GroupSettingsModel import GroupSettingsModel
 from ..model.UserInfoModel import UserInfoModel
 
 def getPluginsList():
-    pluginsList = os.listdir('plugins')
+    if not os.path.exists("./plugins"):
+        os.mkdir("./plugins")
+    pluginsList = os.listdir('./plugins')
     for dbtype in pluginsList[::]:
         if os.path.isfile(os.path.join('plugins',dbtype)) or dbtype.startswith('__'):
             pluginsList.remove(dbtype)
@@ -46,6 +48,10 @@ def _(key: str, *args, **kwargs) -> object:
     return globals()[key]
 
 def reloadPlugins(flag: bool=False):
+    # 清空已有缓存
+    Cache.cacheList = {}
+    Cache.sqlStr = {}
+
     # Load Plugins
     globals()['pluginsLoading'] = True
 

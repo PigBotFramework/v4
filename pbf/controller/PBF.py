@@ -39,12 +39,6 @@ class PBF:
     cost: float = 0.0
     introduction: str = '# PBF插件'
     author: str = 'xzyStudio'
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-    
-    def __enter__(self):
-        return []
 
     def __init__(self, data):
         self.data = data
@@ -58,6 +52,10 @@ class PBF:
     def __str__(self):
         return f'<PBF Program:{self.data.runningProgram} Uuid:{self.data.uuid}>'
 
+    def installPackage(self, package: str):
+        import pip
+        pip._internal.cli.main.main(['install', package])
+    
     def send(self, message):
         return self.client.msg().raw(message)
 

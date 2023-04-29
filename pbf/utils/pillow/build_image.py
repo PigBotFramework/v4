@@ -580,6 +580,13 @@ class BuildImage:
                 self.paste(text2img.to_image(), (int(x), int(y)), alpha=True)
                 return self
 
+    def mkdir(self, path="./resources/createimg/"):
+        try:
+            if not os.path.exists(path):
+                os.makedirs(path)
+        except OSError:
+            pass
+
     def save(self, format: str, **params) -> BytesIO:
         output = BytesIO()
         self.image.save(output, format, **params)

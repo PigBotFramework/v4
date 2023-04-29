@@ -1,10 +1,12 @@
-import datetime, pytz
+import datetime, pytz, os
 from .PbfStruct import Struct
 
 class Logger:
     data: Struct = None
 
     def __init__(self, data: Struct) -> None:
+        if not os.path.exists("./logs"):
+            os.mkdir("./logs")
         self.data = data
 
     def setData(self, data: Struct) -> None:
