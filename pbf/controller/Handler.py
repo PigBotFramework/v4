@@ -5,7 +5,7 @@ import traceback
 
 import requests
 
-from . import Mysql, Cache
+from . import Cache
 from .Banwords import BanWords
 from .Client import Client
 from .CommandListener import CommandListener
@@ -81,6 +81,9 @@ def reloadPlugins(flag: bool = False):
             p('Loading', i, '...')
             module = getattr(module, i)
             globals()['pluginsPath'] = i
+
+            with module():
+                pass
 
             for l in dir(module):
                 if l.startswith('_') or not callable(getattr(module, l)):

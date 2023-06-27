@@ -55,6 +55,12 @@ class PBF:
     def __str__(self):
         return f'<PBF Program:{self.data.runningProgram} Uuid:{self.data.uuid}>'
 
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, trace):
+        pass
+
     def installPackage(self, package: str):
         import pip
         pip._internal.cli.main.main(['install', package])
