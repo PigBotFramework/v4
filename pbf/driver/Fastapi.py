@@ -15,6 +15,7 @@ from slowapi.util import get_remote_address
 
 from .. import utils as uts
 from ..controller import Handler, Mysql, Cache
+from ..model.BotSettingsModel import BotSettingsModel
 from ..utils import Utils
 
 p = Handler.p
@@ -186,7 +187,7 @@ async def weboverview(uuid: str):
     返回值：data[] 具体内容可以请求后查看  
     """
     try:
-        botSettings = Mysql.selectx('SELECT * FROM `botBotconfig` WHERE `uuid`="{0}";'.format(uuid))[0]
+        botSettings = BotSettingsModel(uuid=uuid)
 
         # 尝试请求gocq获取gocq信息
         try:
@@ -402,26 +403,6 @@ async def webgetGOCQConfig(uin: int, host: str, port: int, uuid: str, secret: st
 async def webreloadPlugins():
     '''刷新插件及指令列表'''
     return Handler.reloadPlugins()
-
-
-"""
-@app.get("/sendAll", tags=['其他接口', 'GOCQ接口'])
-async def websendAll(pswd:str):
-    '''机器人通知机器人主人'''
-    try:
-        if pswd == yamldata.get("self").get("pswd"):
-            message = '请注意！机器人上报地址有更新，请将gocq的config.yml中的servers中的http中的post中的url改为以下值：\nhttps://pbfpost.xzynb.top/1000/?uuid={}\n如不及时更改会造成机器人无法使用，请注意！\n如有疑问，请联系 2417481092'.format(i.get("uuid"))
-            for i in mysql.selectx('SELECT * FROM `botBotconfig`'):
-                try:
-                    Handler.send(i.get('uuid'), i.get('owner'), message)
-                except Exception as e:
-                    pass
-            return "OK"
-        else:
-            return "pswd error."
-    except Exception as e:
-        return e
-"""
 
 
 def serve(port: int):

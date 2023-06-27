@@ -119,14 +119,18 @@ def openFile(path):
 
 def CallApi(api, parms, uuid=None, httpurl=None, access_token=None, ob=None, timeout=10):
     if ob != None:
-        httpurl = ob.get("httpurl")
-        access_token = ob.get("secret")
+        if isinstance(ob, dict):
+            httpurl = ob.get("httpurl")
+            access_token = ob.get("secret")
+        elif isinstance(ob, BotSettingsModel):
+            httpurl = ob._get("httpurl")
+            access_token = ob._get("secret")
     elif httpurl != None and access_token != None:
         pass
     elif uuid != None:
-        ob = Mysql.selectx('SELECT * FROM `botBotconfig` WHERE `uuid`="{0}";'.format(uuid))[0]
-        httpurl = ob.get("httpurl")
-        access_token = ob.get("secret")
+        ob = BotSettingsModel(uuid=uuid)
+        httpurl = ob._get("httpurl")
+        access_token = ob._get("secret")
 
     data = requests.post(url='{0}/{1}?access_token={2}'.format(httpurl, api, access_token), json=parms, timeout=timeout)
     return data.json()

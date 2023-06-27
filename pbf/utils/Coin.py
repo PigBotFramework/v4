@@ -2,6 +2,7 @@ import random
 
 from ..controller import Cache, Mysql
 from ..controller.PbfStruct import Struct
+from ..model.UserInfoModel import UserInfoModel, CidUserInfoModel
 
 
 class Coin:
@@ -28,7 +29,7 @@ class Coin:
         if self.data.userCoin == False:
             return False
 
-        Mysql.commonx('UPDATE `botCoin` SET `value`=%s WHERE `qn`=%s', (int(self.data.userCoin) + int(value), uid))
+        UserInfoModel(uuid=self.data.uuid, qn=uid)._set(value=int(self.data.userCoin) + int(value))
         return value
 
     def remove(self, value=None):
@@ -43,5 +44,5 @@ class Coin:
         if self.data.userCoin == False:
             return False
 
-        Mysql.commonx('UPDATE `botCoin` SET `value`=%s WHERE `qn`=%s', (int(self.data.userCoin) - int(value), uid))
+        UserInfoModel(uuid=self.data.uuid, qn=uid)._set(value=int(self.data.userCoin) - int(value))
         return value
