@@ -1,5 +1,6 @@
 from . import Statement
 
+
 class XmlStatement(Statement):
     cqtype = 'xml'
     data: str = None

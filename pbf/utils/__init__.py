@@ -1,15 +1,20 @@
-import hmac, random, math
-from .Coin import Coin
+import hmac
+import math
+import random
+
+from googletrans import Translator as googleTranslator
+
 from .CQCode import CQCode
-from ..controller import Mysql
+from .Coin import Coin
 from ..controller.PbfStruct import Struct
 from ..model.BotSettingsModel import BotSettingsModel
-from googletrans import Translator as googleTranslator
 
 googleTranslatorIns = googleTranslator()
 
 from apscheduler.schedulers.background import BackgroundScheduler
+
 scheduler = BackgroundScheduler(timezone="Asia/Shanghai")
+
 
 class Utils:
     coin: Coin = None
@@ -23,7 +28,7 @@ class Utils:
     def insertStr(self, content):
         sendStr = 'abcdefghijklmnopqrstuvwxyz'
         if '[CQ:' not in content:
-            for _ in range(math.floor(len(content)/15)):
+            for _ in range(math.floor(len(content) / 15)):
                 pos = random.randint(0, len(content))
                 content = content[:pos] + sendStr[random.randint(0, 25)] + content[pos:]
             self.content = content
@@ -31,19 +36,19 @@ class Utils:
 
     def generateCode(self, num: int):
         '''generate_code方法主要用于生成指定长度的验证码'''
-        #定义字符串
+        # 定义字符串
         str1 = "23456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        #循环num次生成num长度的字符串
-        code =''
+        # 循环num次生成num长度的字符串
+        code = ''
         for _ in range(num):
-            index = random.randint(0,len(str1)-1)
+            index = random.randint(0, len(str1) - 1)
             code += str1[index]
         return code
-    
+
     def openFile(self, path: str):
         with open(path, 'r') as f:
             return f.read()
-        
+
     def writeFile(self, path: str, content: str):
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
@@ -66,9 +71,9 @@ class Utils:
         num = 0
         for i in ob:
             if str(i.get(str(key))) == str(value):
-                return {"num":num,"object":i}
+                return {"num": num, "object": i}
             num += 1
-        return {"num":-1,"object":404}
+        return {"num": -1, "object": 404}
 
     def getPswd(self, uuid):
         '''

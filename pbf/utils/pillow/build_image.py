@@ -1,17 +1,19 @@
-import cv2, time
-import numpy as np
+import time
 from io import BytesIO
 from pathlib import Path
-from PIL import Image, ImageDraw
-from PIL.ImageColor import getrgb
-from PIL.Image import Image as IMG
-from PIL.ImageFilter import Filter
-from PIL.ImageDraw import ImageDraw as Draw
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Type
 
-from .types import *
+import cv2
+import numpy as np
+from PIL import Image, ImageDraw
+from PIL.Image import Image as IMG
+from PIL.ImageColor import getrgb
+from PIL.ImageDraw import ImageDraw as Draw
+from PIL.ImageFilter import Filter
+
 from .gradient import Gradient
 from .text2image import Text2Image
+from .types import *
 
 
 class BuildImage:
@@ -40,7 +42,7 @@ class BuildImage:
 
     @classmethod
     def new(
-        cls, mode: ModeType, size: SizeType, color: Optional[ColorType] = None
+            cls, mode: ModeType, size: SizeType, color: Optional[ColorType] = None
     ) -> "BuildImage":
         return cls(Image.new(mode, size, color))  # type: ignore
 
@@ -52,14 +54,14 @@ class BuildImage:
         return BuildImage(self.image.copy())
 
     def resize(
-        self,
-        size: SizeType,
-        resample: ResampleType = Image.ANTIALIAS,
-        keep_ratio: bool = False,
-        inside: bool = False,
-        direction: DirectionType = "center",
-        bg_color: Optional[ColorType] = None,
-        **kwargs
+            self,
+            size: SizeType,
+            resample: ResampleType = Image.ANTIALIAS,
+            keep_ratio: bool = False,
+            inside: bool = False,
+            direction: DirectionType = "center",
+            bg_color: Optional[ColorType] = None,
+            **kwargs
     ) -> "BuildImage":
         """
         调整图片尺寸
@@ -91,10 +93,10 @@ class BuildImage:
         return image
 
     def resize_canvas(
-        self,
-        size: SizeType,
-        direction: DirectionType = "center",
-        bg_color: Optional[ColorType] = None,
+            self,
+            size: SizeType,
+            direction: DirectionType = "center",
+            bg_color: Optional[ColorType] = None,
     ) -> "BuildImage":
         """
         调整“画布”大小，超出部分裁剪，不足部分设为指定颜色
@@ -128,11 +130,11 @@ class BuildImage:
         return self.resize((int(self.width * height / self.height), height), **kwargs)
 
     def rotate(
-        self,
-        angle: float,
-        resample: ResampleType = Image.BICUBIC,
-        expand: bool = False,
-        **kwargs
+            self,
+            angle: float,
+            resample: ResampleType = Image.BICUBIC,
+            expand: bool = False,
+            **kwargs
     ) -> "BuildImage":
         """旋转图片"""
         image = BuildImage(
@@ -173,11 +175,11 @@ class BuildImage:
         return BuildImage(self.image.convert(mode, **kwargs))
 
     def paste(
-        self,
-        img: Union[IMG, "BuildImage"],
-        pos: PosTypeInt = (0, 0),
-        alpha: bool = False,
-        below: bool = False,
+            self,
+            img: Union[IMG, "BuildImage"],
+            pos: PosTypeInt = (0, 0),
+            alpha: bool = False,
+            below: bool = False,
     ) -> "BuildImage":
         """
         粘贴图片
@@ -202,10 +204,10 @@ class BuildImage:
         return self
 
     def alpha_composite(
-        self,
-        img: Union[IMG, "BuildImage"],
-        dest: PosTypeInt = (0, 0),
-        source: Union[PosTypeInt, BoxType] = (0, 0),
+            self,
+            img: Union[IMG, "BuildImage"],
+            dest: PosTypeInt = (0, 0),
+            source: Union[PosTypeInt, BoxType] = (0, 0),
     ) -> "BuildImage":
         if isinstance(img, BuildImage):
             img = img.image
@@ -335,98 +337,98 @@ class BuildImage:
         return BuildImage(Image.fromarray(result))
 
     def draw_point(
-        self, pos: PosTypeFloat, fill: Optional[ColorType] = None
+            self, pos: PosTypeFloat, fill: Optional[ColorType] = None
     ) -> "BuildImage":
         """在图片上画点"""
         self.draw.point(pos, fill=fill)
         return self
 
     def draw_line(
-        self,
-        xy: XYType,
-        fill: Optional[ColorType] = None,
-        width: float = 1,
+            self,
+            xy: XYType,
+            fill: Optional[ColorType] = None,
+            width: float = 1,
     ) -> "BuildImage":
         """在图片上画直线"""
         self.draw.line(xy, fill=fill, width=width)
         return self
 
     def draw_rectangle(
-        self,
-        xy: XYType,
-        fill: Optional[ColorType] = None,
-        outline: Optional[ColorType] = None,
-        width: float = 1,
+            self,
+            xy: XYType,
+            fill: Optional[ColorType] = None,
+            outline: Optional[ColorType] = None,
+            width: float = 1,
     ) -> "BuildImage":
         """在图片上画矩形"""
         self.draw.rectangle(xy, fill, outline, width)
         return self
 
     def draw_rounded_rectangle(
-        self,
-        xy: XYType,
-        radius: int = 0,
-        fill: Optional[ColorType] = None,
-        outline: Optional[ColorType] = None,
-        width: float = 1,
+            self,
+            xy: XYType,
+            radius: int = 0,
+            fill: Optional[ColorType] = None,
+            outline: Optional[ColorType] = None,
+            width: float = 1,
     ) -> "BuildImage":
         """在图片上画圆角矩形"""
         self.draw.rounded_rectangle(xy, radius, fill, outline, width)
         return self
 
     def draw_polygon(
-        self,
-        xy: List[PosTypeFloat],
-        fill: Optional[ColorType] = None,
-        outline: Optional[ColorType] = None,
-        width: float = 1,
+            self,
+            xy: List[PosTypeFloat],
+            fill: Optional[ColorType] = None,
+            outline: Optional[ColorType] = None,
+            width: float = 1,
     ) -> "BuildImage":
         """在图片上画多边形"""
         self.draw.polygon(xy, fill, outline, width)
         return self
 
     def draw_arc(
-        self,
-        xy: XYType,
-        start: float,
-        end: float,
-        fill: Optional[ColorType] = None,
-        width: float = 1,
+            self,
+            xy: XYType,
+            start: float,
+            end: float,
+            fill: Optional[ColorType] = None,
+            width: float = 1,
     ) -> "BuildImage":
         """在图片上画圆弧"""
         self.draw.arc(xy, start, end, fill, width)
         return self
 
     def draw_ellipse(
-        self,
-        xy: XYType,
-        fill: Optional[ColorType] = None,
-        outline: Optional[ColorType] = None,
-        width: float = 1,
+            self,
+            xy: XYType,
+            fill: Optional[ColorType] = None,
+            outline: Optional[ColorType] = None,
+            width: float = 1,
     ) -> "BuildImage":
         """在图片上画圆"""
         self.draw.ellipse(xy, fill, outline, width)
         return self
 
     def draw_text(
-        self,
-        xy: XYType,
-        text: str,
-        max_fontsize: int = 30,
-        min_fontsize: int = 12,
-        allow_wrap: bool = False,
-        style: FontStyle = "normal",
-        weight: FontWeight = "normal",
-        fill: ColorType = "black",
-        spacing: int = 4,
-        halign: HAlignType = "center",
-        valign: VAlignType = "center",
-        lines_align: HAlignType = "left",
-        stroke_ratio: float = 0,
-        stroke_fill: Optional[ColorType] = None,
-        font_fallback: bool = True,
-        fontname: str = "",
-        fallback_fonts: List[str] = [],
+            self,
+            xy: XYType,
+            text: str,
+            max_fontsize: int = 30,
+            min_fontsize: int = 12,
+            allow_wrap: bool = False,
+            style: FontStyle = "normal",
+            weight: FontWeight = "normal",
+            fill: ColorType = "black",
+            spacing: int = 4,
+            halign: HAlignType = "center",
+            valign: VAlignType = "center",
+            lines_align: HAlignType = "left",
+            stroke_ratio: float = 0,
+            stroke_fill: Optional[ColorType] = None,
+            font_fallback: bool = True,
+            fontname: str = "",
+            fallback_fonts: List[str] = [],
     ) -> "BuildImage":
         """
         在图片上指定区域画文字
@@ -498,22 +500,22 @@ class BuildImage:
                 return self
 
     def draw_bbcode_text(
-        self,
-        xy: XYType,
-        text: str,
-        max_fontsize: int = 30,
-        min_fontsize: int = 12,
-        allow_wrap: bool = False,
-        fill: ColorType = "black",
-        spacing: int = 4,
-        halign: HAlignType = "center",
-        valign: VAlignType = "center",
-        lines_align: HAlignType = "left",
-        stroke_ratio: float = 0,
-        stroke_fill: Optional[ColorType] = None,
-        font_fallback: bool = True,
-        fontname: str = "",
-        fallback_fonts: List[str] = [],
+            self,
+            xy: XYType,
+            text: str,
+            max_fontsize: int = 30,
+            min_fontsize: int = 12,
+            allow_wrap: bool = False,
+            fill: ColorType = "black",
+            spacing: int = 4,
+            halign: HAlignType = "center",
+            valign: VAlignType = "center",
+            lines_align: HAlignType = "left",
+            stroke_ratio: float = 0,
+            stroke_fill: Optional[ColorType] = None,
+            font_fallback: bool = True,
+            fontname: str = "",
+            fallback_fonts: List[str] = [],
     ) -> "BuildImage":
         """
         在图片上指定区域画文字
@@ -595,11 +597,11 @@ class BuildImage:
     def save_jpg(self) -> BytesIO:
         output = '{0}.jpg'.format(time.time())
         image = self.image.convert("RGB")
-        image.save('./resources/createimg/'+output, format="jpeg")
+        image.save('./resources/createimg/' + output, format="jpeg")
         return output
 
     def save_png(self) -> BytesIO:
         output = '{0}.png'.format(time.time())
         image = self.image.convert("RGBA")
-        image.save('./resources/createimg/'+output, format="png")
+        image.save('./resources/createimg/' + output, format="png")
         return output

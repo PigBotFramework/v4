@@ -1,8 +1,9 @@
 from ..statement import Statement
 
+
 class CQCode:
     content: str = None
-    
+
     def __init__(self, content: str) -> None:
         if content == None:
             raise ValueError("Content cannot be None!")
@@ -16,7 +17,7 @@ class CQCode:
         for i in left:
             try:
                 right: list = i.split("]")[0].split(",")
-                cqDict: dict = {"type":"cqcode","data":{}}
+                cqDict: dict = {"type": "cqcode", "data": {}}
                 for j in right:
                     if j == right[0]:
                         cqDict["type"] = j.split(":")[1]
@@ -26,9 +27,9 @@ class CQCode:
                 arr.append(cqDict)
             except Exception:
                 raise ValueError("Not a valid CQCode!")
-        
+
         return arr
-    
+
     def get(self, key: str, index: int = None, type: str = None) -> list:
         arr: list = []
         CQArr: list = self.getArr()
@@ -38,8 +39,8 @@ class CQCode:
                 return [CQArr[index].get("data").get(key)]
             else:
                 # raise IndexError("Index out of range!")
-                return [] 
-        
+                return []
+
         elif type != None:
             for i in CQArr:
                 if i.get("type") == type:
@@ -49,12 +50,12 @@ class CQCode:
             for i in CQArr:
                 if i.get("data").get(key) != None:
                     arr.append(i.get("data").get(key))
-        
+
         return arr
-    
+
     def toStatement(self):
         return Statement('cqcode').set(self.getArr())
-                
+
 
 if __name__ == "__main__":
     cqcode = CQCode("[CQ:face,id=54][CQ:image,url=azazaz,az=abab]")

@@ -1,22 +1,20 @@
+import argparse
 import os
 import sys
-import argparse
 
 import tensorflow as tf
 from tensorflow.python.saved_model import builder as saved_model_builder
-from tensorflow.python.saved_model.signature_def_utils\
-    import predict_signature_def
-
-from tensorflow.python.saved_model.tag_constants import SERVING
-from tensorflow.python.saved_model.signature_constants\
+from tensorflow.python.saved_model.signature_constants \
     import DEFAULT_SERVING_SIGNATURE_DEF_KEY
-
 from tensorflow.python.saved_model.signature_constants import PREDICT_INPUTS
 from tensorflow.python.saved_model.signature_constants import PREDICT_OUTPUTS
+from tensorflow.python.saved_model.signature_def_utils \
+    import predict_signature_def
+from tensorflow.python.saved_model.tag_constants import SERVING
 
 sys.path.append((os.path.normpath(
-                 os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              '..'))))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '..'))))
 
 from model import OpenNsfwModel, InputType
 

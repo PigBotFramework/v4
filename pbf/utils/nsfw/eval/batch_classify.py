@@ -1,10 +1,9 @@
-
 import os
 import sys
 
 sys.path.append((os.path.normpath(
-                 os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              '..'))))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '..'))))
 
 import argparse
 import glob
@@ -15,7 +14,6 @@ from model import OpenNsfwModel, InputType
 from image_utils import create_tensorflow_image_loader
 from image_utils import create_yahoo_image_loader
 
-
 IMAGE_LOADER_TENSORFLOW = "tensorflow"
 IMAGE_LOADER_YAHOO = "yahoo"
 
@@ -25,7 +23,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 def create_batch_iterator(filenames, batch_size, fn_load_image):
     for i in range(0, len(filenames), batch_size):
-        yield list(map(fn_load_image, filenames[i:i+batch_size]))
+        yield list(map(fn_load_image, filenames[i:i + batch_size]))
 
 
 def create_tf_batch_iterator(filenames, batch_size):
@@ -34,7 +32,7 @@ def create_tf_batch_iterator(filenames, batch_size):
             fn_load_image = create_tensorflow_image_loader(session,
                                                            expand_dims=False)
 
-            yield list(map(fn_load_image, filenames[i:i+batch_size]))
+            yield list(map(fn_load_image, filenames[i:i + batch_size]))
 
 
 def main(argv):
@@ -107,6 +105,7 @@ def main(argv):
                                                       prediction[1]))
 
                     progress_bar.update(len(images))
+
 
 if __name__ == "__main__":
     main(sys.argv)

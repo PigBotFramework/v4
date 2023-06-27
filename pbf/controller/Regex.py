@@ -1,7 +1,7 @@
 from .Client import Client
 from .PbfStruct import Struct
-from ..statement.TextStatement import TextStatement
 from ..model.KeywordReplaceModel import KeywordReplaceModel
+
 
 class Regex:
     client: Client = None
@@ -26,20 +26,20 @@ class Regex:
                 return 1
         else:
             return 0
-    
+
     def replace(self, replyContent):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
         se = self.data.se
         coin = self.data.userCoin
         _ = f'{uid}{gid}{se}'
-        
+
         if coin == -1:
             coin = '用户未注册！'
         for i in self.kwrList:
             replyContent = replyContent.replace(i.get('key'), str(eval(i.get('value'))))
         return replyContent
-    
+
     def orx(self, replyKey, message):
         if '|' in replyKey:
             splitKey = replyKey.split('|')
@@ -54,7 +54,7 @@ class Regex:
             return self.andx(replyKey, message)
         else:
             return 0
-    
+
     def andx(self, replyKey, message):
         if '&amp;' in replyKey:
             msgand = replyKey.split('&amp;')
@@ -73,7 +73,7 @@ class Regex:
         if self.orx(replyKey, message) or replyKey in message:
             return True
         return False
-    
+
     def send(self, replyContent):
         replyContent = self.replace(replyContent)
         if ('|' in replyContent) and ('|]' not in replyContent) and ('[|' not in replyContent):

@@ -1,23 +1,24 @@
 import re
-from bbcode import Parser
+from typing import List, Optional, Iterator
+
 from PIL import Image, ImageDraw
 from PIL.Image import Image as IMG
 from PIL.ImageColor import colormap
-from typing import List, Optional, Iterator
+from bbcode import Parser
 
-from .types import *
 from .fonts import Font, get_proper_font
+from .types import *
 
 
 class Char:
     def __init__(
-        self,
-        char: str,
-        font: Font,
-        fontsize: int = 16,
-        fill: ColorType = "black",
-        stroke_width: int = 0,
-        stroke_fill: Optional[ColorType] = None,
+            self,
+            char: str,
+            font: Font,
+            fontsize: int = 16,
+            fill: ColorType = "black",
+            stroke_width: int = 0,
+            stroke_fill: Optional[ColorType] = None,
     ):
         self.char = char
         self.font = font
@@ -77,7 +78,7 @@ class Char:
 
 class Line:
     def __init__(
-        self, chars: List[Char], align: HAlignType = "left", fontsize: int = 16
+            self, chars: List[Char], align: HAlignType = "left", fontsize: int = 16
     ):
         self.chars: List[Char] = chars
         self.align: HAlignType = align
@@ -88,9 +89,9 @@ class Line:
         if not self.chars:
             return 0
         return (
-            sum([char.width - char.stroke_width * 2 for char in self.chars])
-            + self.chars[0].stroke_width
-            + self.chars[-1].stroke_width
+                sum([char.width - char.stroke_width * 2 for char in self.chars])
+                + self.chars[0].stroke_width
+                + self.chars[-1].stroke_width
         )
 
     @property
@@ -122,7 +123,7 @@ class Line:
     def wrap(self, width: float) -> Iterator["Line"]:
         last_idx = 0
         for idx in range(len(self.chars)):
-            if Line(self.chars[last_idx : idx + 1]).width > width:
+            if Line(self.chars[last_idx: idx + 1]).width > width:
                 yield Line(self.chars[last_idx:idx], self.align)
                 last_idx = idx
         yield Line(self.chars[last_idx:], self.align)
@@ -135,19 +136,19 @@ class Text2Image:
 
     @classmethod
     def from_text(
-        cls,
-        text: str,
-        fontsize: int,
-        style: FontStyle = "normal",
-        weight: FontWeight = "normal",
-        fill: ColorType = "black",
-        spacing: int = 4,
-        align: HAlignType = "left",
-        stroke_width: int = 0,
-        stroke_fill: Optional[ColorType] = None,
-        font_fallback: bool = True,
-        fontname: str = "",
-        fallback_fonts: List[str] = [],
+            cls,
+            text: str,
+            fontsize: int,
+            style: FontStyle = "normal",
+            weight: FontWeight = "normal",
+            fill: ColorType = "black",
+            spacing: int = 4,
+            align: HAlignType = "left",
+            stroke_width: int = 0,
+            stroke_fill: Optional[ColorType] = None,
+            font_fallback: bool = True,
+            fontname: str = "",
+            fallback_fonts: List[str] = [],
     ) -> "Text2Image":
         """
         从文本构建 `Text2Image` 对象
@@ -193,17 +194,17 @@ class Text2Image:
 
     @classmethod
     def from_bbcode_text(
-        cls,
-        text: str,
-        fontsize: int = 30,
-        fill: ColorType = "black",
-        spacing: int = 6,
-        align: HAlignType = "left",
-        stroke_ratio: float = 0,
-        stroke_fill: Optional[ColorType] = None,
-        font_fallback: bool = True,
-        fontname: str = "",
-        fallback_fonts: List[str] = [],
+            cls,
+            text: str,
+            fontsize: int = 30,
+            fill: ColorType = "black",
+            spacing: int = 6,
+            align: HAlignType = "left",
+            stroke_ratio: float = 0,
+            stroke_fill: Optional[ColorType] = None,
+            font_fallback: bool = True,
+            fontname: str = "",
+            fallback_fonts: List[str] = [],
     ) -> "Text2Image":
         """
         从含有 `BBCode` 的文本构建 `Text2Image` 对象
@@ -359,11 +360,11 @@ class Text2Image:
         if not self.lines:
             return 0
         return (
-            sum([line.ascent for line in self.lines])
-            + self.lines[-1].descent
-            + self.spacing * (len(self.lines) - 1)
-            + self.lines[0].max_stroke_width
-            + self.lines[-1].max_stroke_width
+                sum([line.ascent for line in self.lines])
+                + self.lines[-1].descent
+                + self.spacing * (len(self.lines) - 1)
+                + self.lines[0].max_stroke_width
+                + self.lines[-1].max_stroke_width
         )
 
     def wrap(self, width: float) -> "Text2Image":
@@ -374,9 +375,9 @@ class Text2Image:
         return self
 
     def to_image(
-        self,
-        bg_color: Optional[ColorType] = None,
-        padding: Union[SizeType, BoxType] = (0, 0),
+            self,
+            bg_color: Optional[ColorType] = None,
+            padding: Union[SizeType, BoxType] = (0, 0),
     ) -> IMG:
         if len(padding) == 4:
             padding_left, padding_top, padding_right, padding_bottom = padding
@@ -432,12 +433,12 @@ class Text2Image:
 
 
 def text2image(
-    text: str,
-    bg_color: ColorType = "white",
-    padding: Union[SizeType, BoxType] = (10, 10),
-    max_width: Optional[int] = None,
-    font_fallback: bool = True,
-    **kwargs,
+        text: str,
+        bg_color: ColorType = "white",
+        padding: Union[SizeType, BoxType] = (10, 10),
+        max_width: Optional[int] = None,
+        font_fallback: bool = True,
+        **kwargs,
 ) -> IMG:
     """
     文字转图片，支持少量 `BBCode` 标签，具体见 `Text2Image` 类的 `from_bbcode_text` 函数

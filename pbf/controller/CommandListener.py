@@ -1,11 +1,13 @@
-from .PbfStruct import Struct
 import time
+
+from .PbfStruct import Struct
 from ..utils import Utils
+
 
 class CommandListener:
     data: Struct = None
     rclOb: dict = None
-    
+
     def __init__(self, struct):
         self.data = struct
 
@@ -46,5 +48,6 @@ class CommandListener:
         else:
             commandListenerList.pop(num)
             return True
+
 
 commandListenerList = []

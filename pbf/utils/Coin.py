@@ -1,6 +1,8 @@
-import sys, random
+import random
+
 from ..controller import Cache, Mysql
 from ..controller.PbfStruct import Struct
+
 
 class Coin:
     data: Struct = None
@@ -16,28 +18,30 @@ class Coin:
 
     def add(self, value=None):
         if value == None:
-            value=random.randint(self.data.botSettings._get('lowRandomCoin'), self.data.botSettings._get('highRandomCoin'))
-        
+            value = random.randint(self.data.botSettings._get('lowRandomCoin'),
+                                   self.data.botSettings._get('highRandomCoin'))
+
         uid = self.data.se.get('user_id')
-        
+
         if self.data.userCoin == -1:
             return 0
         if self.data.userCoin == False:
             return False
 
-        Mysql.commonx('UPDATE `botCoin` SET `value`=%s WHERE `qn`=%s', (int(self.data.userCoin)+int(value), uid))
+        Mysql.commonx('UPDATE `botCoin` SET `value`=%s WHERE `qn`=%s', (int(self.data.userCoin) + int(value), uid))
         return value
-        
+
     def remove(self, value=None):
         if value == None:
-            value = random.randint(self.data.botSettings._get('lowRandomCoin'), self.data.botSettings._get('highRandomCoin'))
-        
+            value = random.randint(self.data.botSettings._get('lowRandomCoin'),
+                                   self.data.botSettings._get('highRandomCoin'))
+
         uid = self.data.se.get('user_id')
-        
+
         if self.data.userCoin == -1:
             return 0
         if self.data.userCoin == False:
             return False
-        
-        Mysql.commonx('UPDATE `botCoin` SET `value`=%s WHERE `qn`=%s', (int(self.data.userCoin)-int(value), uid))
+
+        Mysql.commonx('UPDATE `botCoin` SET `value`=%s WHERE `qn`=%s', (int(self.data.userCoin) - int(value), uid))
         return value

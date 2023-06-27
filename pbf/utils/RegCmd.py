@@ -1,6 +1,9 @@
-from typing import List
 from functools import wraps
+from typing import List
+
 from ..controller import Handler
+
+
 class RegCmd:
     name: str = 'Command name'
     description: str = 'Command description'
@@ -10,14 +13,14 @@ class RegCmd:
     hidden: bool = False
     enabled: bool = True
     type: str = 'command'
-    function: str = '__enter__'
+    function: str = 'basic@passs'
     mode: str = '机器人操作'
     pwd: str = 'foo'
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
-    
+
     def __str__(self):
         return f'<RegCmd name: {self.name} mode: {self.mode} function: {self.function}>'
 
@@ -48,4 +51,5 @@ class RegCmd:
                 Handler.requestListenerList.append(self)
             elif self.type == 'message':
                 Handler.messageListenerList.append(self)
+
         return wrapper

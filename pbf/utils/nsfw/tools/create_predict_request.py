@@ -1,17 +1,15 @@
-import base64
-import json
 import argparse
+import json
+import os
+import sys
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.saved_model.signature_constants import PREDICT_INPUTS
 
-import os
-import sys
-
 sys.path.append((os.path.normpath(
-                 os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              '..'))))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '..'))))
 
 from image_utils import create_tensorflow_image_loader
 from image_utils import create_yahoo_image_loader
@@ -20,12 +18,14 @@ from model import InputType
 IMAGE_LOADER_TENSORFLOW = "tensorflow"
 IMAGE_LOADER_YAHOO = "yahoo"
 
+
 # Thanks to https://stackoverflow.com/a/47626762
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
 
 """Generates a json prediction request suitable for consumption by a model 
 generated with 'export-model.py' and deployed on either ml-engine or tensorflow-serving
@@ -68,6 +68,7 @@ if __name__ == "__main__":
             image_data = create_yahoo_image_loader(tf.Session(graph=tf.Graph()))(args.input_file)[0]
     elif input_type == InputType.BASE64_JPEG:
         import base64
+
         image_data = base64.urlsafe_b64encode(open(args.input_file, "rb").read()).decode("ascii")
 
     if target == "ml-engine":

@@ -1,21 +1,21 @@
-import anyio
-import httpx
 import shutil
 import traceback
-from pathlib import Path
-from PIL import ImageFont
-from functools import lru_cache
-from fontTools.ttLib import TTFont
 from collections import namedtuple
-from PIL.ImageFont import FreeTypeFont
-from matplotlib.ft2font import FT2Font
-from typing import List, Union, Optional, Set, Iterator
-from matplotlib.font_manager import FontManager, FontProperties
+from functools import lru_cache
+from pathlib import Path
+from typing import List, Optional, Set, Iterator
 
-from .types import *
-from .config import Config
-
+import anyio
+import httpx
 import loguru
+from PIL import ImageFont
+from PIL.ImageFont import FreeTypeFont
+from fontTools.ttLib import TTFont
+from matplotlib.font_manager import FontManager, FontProperties
+from matplotlib.ft2font import FT2Font
+
+from .config import Config
+from .types import *
 
 logger = loguru.logger
 imageutils_config = Config()
@@ -64,11 +64,11 @@ class Font:
     @classmethod
     @lru_cache()
     def find(
-        cls,
-        family: str,
-        style: FontStyle = "normal",
-        weight: FontWeight = "normal",
-        fallback_to_default: bool = True,
+            cls,
+            family: str,
+            style: FontStyle = "normal",
+            weight: FontWeight = "normal",
+            fallback_to_default: bool = True,
     ) -> "Font":
         """查找插件路径和系统路径下的字体"""
         font = cls.find_special_font(family)
@@ -150,11 +150,11 @@ default_fallback_fonts = imageutils_config.default_fallback_fonts
 
 
 def get_proper_font(
-    char: str,
-    style: FontStyle = "normal",
-    weight: FontWeight = "normal",
-    fontname: Optional[str] = None,
-    fallback_fonts: List[str] = [],
+        char: str,
+        style: FontStyle = "normal",
+        weight: FontWeight = "normal",
+        fontname: Optional[str] = None,
+        fallback_fonts: List[str] = [],
 ) -> Font:
     """
     获取合适的字体，将依次检查备选字体是否支持想要的字符

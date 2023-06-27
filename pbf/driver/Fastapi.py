@@ -1,15 +1,22 @@
+import json
+import os
+import time
+import traceback
+from typing import Union
+
+import requests
+import uvicorn
+import yaml
 from fastapi import FastAPI, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Union
-import uvicorn, asyncio, traceback, yaml, time, random, importlib, requests, sys, hmac, os, json, math, datetime, pytz, urllib
-from urllib.request import urlopen
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from inspect import getmembers, isclass
-from ..utils import Utils
+
 from .. import utils as uts
 from ..controller import Handler, Mysql, Cache
+from ..utils import Utils
+
 p = Handler.p
 
 requests.adapters.DEFAULT_RETRIES = 5
@@ -66,6 +73,7 @@ app.add_middleware(
 
 utils = Utils()
 
+
 @app.on_event('shutdown')
 def app_on_shutdown():
     try:
@@ -73,6 +81,7 @@ def app_on_shutdown():
         p('Scheduler shutdowned.')
     except Exception:
         pass
+
 
 @app.post("/", tags=['上报接口'])
 async def post_data(request: Request, X_Signature: Union[str, None] = Header(default=None)):
@@ -97,12 +106,13 @@ async def post_data(request: Request, X_Signature: Union[str, None] = Header(def
             # botIns.CrashReport(se, params.get("uuid"))
             Handler.requestInit(se, params.get("uuid"))
         else:
-            return {"code":403}
+            return {"code": 403}
     except Exception as e:
         p(f'Crashed: {e}\n{traceback.format_exc()}')
 
+
 @app.get("/get", tags=['上报接口'])
-async def get_data(uuid:str, pswd:str, params:str):
+async def get_data(uuid: str, pswd: str, params: str):
     """
     描述：**机器人事件GET上报接口**  
     身份验证：需提供`UUID`和`pswd`，**不可通过`X_Signature`验证身份**（不是OneBot规定的上报接口，可用于其他情况的上报）  
@@ -112,7 +122,8 @@ async def get_data(uuid:str, pswd:str, params:str):
         Handler.requestInit(json.loads(params), uuid)
         return json.loads(params)
     else:
-        return {"code":403}
+        return {"code": 403}
+
 
 @app.post("/testSpeed", tags=['其他接口'])
 @app.get("/testSpeed", tags=['其他接口'])
@@ -125,10 +136,15 @@ async def webtestSpeed(request: Request, X_Forwarded_For: Union[str, None] = Hea
     """
     timeStart = time.time()
     message = "菜单 noreply"
-    Handler.requestInit({'post_type': 'message', 'message_type': 'group', 'self_id': 3558267090, 'sub_type': 'normal', 'group_id': 763432519, 'message': message, 'sender': {'age': 0, 'area': '', 'card': '', 'level': '', 'nickname': '', 'role': 'owner', 'sex': 'unknown', 'title': '', 'user_id': 66600000}, 'user_id': 66600000, 'font': 0, 'raw_message': message}, "123456789")
+    Handler.requestInit({'post_type': 'message', 'message_type': 'group', 'self_id': 3558267090, 'sub_type': 'normal',
+                         'group_id': 763432519, 'message': message,
+                         'sender': {'age': 0, 'area': '', 'card': '', 'level': '', 'nickname': '', 'role': 'owner',
+                                    'sex': 'unknown', 'title': '', 'user_id': 66600000}, 'user_id': 66600000, 'font': 0,
+                         'raw_message': message}, "123456789")
     timeEnd = time.time()
-    report = {"code":200,"startTime":timeStart,"endTime":timeEnd,"cost":timeEnd-timeStart}
+    report = {"code": 200, "startTime": timeStart, "endTime": timeEnd, "cost": timeEnd - timeStart}
     return report
+
 
 @app.post("/status", tags=['其他接口'])
 @app.get("/status", tags=['其他接口'])
@@ -137,7 +153,8 @@ async def webstatus():
     描述：获取处理器状态  
     返回值：`{"code":200}`  
     """
-    return json.dumps({"code":200}, ensure_ascii=False)
+    return json.dumps({"code": 200}, ensure_ascii=False)
+
 
 @app.post("/webhook", tags=['其他接口'])
 async def webhook(request: Request, X_Hub_Signature: Union[str, None] = Header(default=None)):
@@ -153,14 +170,16 @@ async def webhook(request: Request, X_Hub_Signature: Union[str, None] = Header(d
     signature = X_Hub_Signature.split('=')[-1]
     if signature != token:
         return "token认证无效", 401
-    data = json.loads(str(body, encoding = "utf8"))
+    data = json.loads(str(body, encoding="utf8"))
     # 运行shell脚本，更新代码
-    os.system('./pull.sh {0} {1} {2}'.format(data.get('repository').get('name'), data.get('repository').get('url'), data.get('repository').get('full_name')))
+    os.system('./pull.sh {0} {1} {2}'.format(data.get('repository').get('name'), data.get('repository').get('url'),
+                                             data.get('repository').get('full_name')))
     return {"status": 200}
+
 
 @app.get("/overview", tags=['GOCQ接口'])
 @app.post("/overview", tags=['GOCQ接口'])
-async def weboverview(uuid:str):
+async def weboverview(uuid: str):
     """
     描述：获取机器人GOCQ数据概览  
     参数：`UUID` 机器人实例uuid  
@@ -168,17 +187,17 @@ async def weboverview(uuid:str):
     """
     try:
         botSettings = Mysql.selectx('SELECT * FROM `botBotconfig` WHERE `uuid`="{0}";'.format(uuid))[0]
-        
+
         # 尝试请求gocq获取gocq信息
         try:
             gocq = Handler.CallApi("get_version_info", {}, ob=botSettings, timeout=5).get("data")
             if gocq.get('app_name') != "go-cqhttp":
-                return {'code':502}
+                return {'code': 502}
         except Exception as e:
             print(e)
-            return {'code':502}
-        
-        data = {'code':200,'go-cqhttp':gocq,'time':time.time()}
+            return {'code': 502}
+
+        data = {'code': 200, 'go-cqhttp': gocq, 'time': time.time()}
         # 获取各项数据
         # 1. 群聊列表
         groupList = Handler.CallApi('get_group_list', {}, ob=botSettings).get('data')
@@ -189,13 +208,14 @@ async def weboverview(uuid:str):
         # 3. 网络信息
         network = Handler.CallApi('get_status', {}, ob=botSettings).get('data')
         data['network'] = network.get('stat')
-        
+
         return data
     except Exception:
         return traceback.format_exc()
-    
+
+
 @app.get("/getFriendAndGroupList", tags=['GOCQ接口'])
-async def webgetFriendAndGroupList(pswd:str, uuid:str):
+async def webgetFriendAndGroupList(pswd: str, uuid: str):
     """
     描述：获取机器人好友和群聊列表  
     参数：`pswd:str` 密钥    `uuid:str` 实例uuid  
@@ -205,95 +225,109 @@ async def webgetFriendAndGroupList(pswd:str, uuid:str):
         if pswd == utils.getPswd(uuid):
             groupList = Handler.CallApi('get_group_list', {}, uuid).get('data')
             friendList = Handler.CallApi('get_friend_list', {}, uuid).get('data')
-            return {'friendList':friendList,'groupList':groupList}
+            return {'friendList': friendList, 'groupList': groupList}
         else:
             return 'Password error.'
     except Exception:
         return traceback.format_exc()
 
+
 @app.get("/getFriendList", tags=['GOCQ接口'])
-async def webgetFriendList(pswd:str, uuid:str):
+async def webgetFriendList(pswd: str, uuid: str):
     """获取机器人好友列表"""
     if pswd == utils.getPswd(uuid):
         return Handler.CallApi('get_friend_list', {}, uuid).get('data')
     else:
         return 'Password error.'
 
+
 @app.get("/kickUser", tags=['GOCQ接口'])
-async def webkickUser(pswd:str, uuid:str, gid:int, uid:int):
+async def webkickUser(pswd: str, uuid: str, gid: int, uid: int):
     """踢出某人"""
     if pswd == utils.getPswd(uuid):
-        data = Handler.CallApi('set_group_kick', {'group_id':gid,'user_id':uid}, uuid)
+        data = Handler.CallApi('set_group_kick', {'group_id': gid, 'user_id': uid}, uuid)
         return 'OK.' if data['status'] == 'ok' else 'failed.'
     else:
         return 'Password error.'
 
+
 @app.get("/banUser", tags=['GOCQ接口'])
-async def webBanUser(pswd:str, uuid:str, uid:int, gid:int, duration:int):
+async def webBanUser(pswd: str, uuid: str, uid: int, gid: int, duration: int):
     """禁言某人"""
     if pswd == utils.getPswd(uuid):
-        Handler.CallApi('set_group_ban', {'group_id':gid,'user_id':uid,'duration':duration}, uuid)
+        Handler.CallApi('set_group_ban', {'group_id': gid, 'user_id': uid, 'duration': duration}, uuid)
         return 'OK.'
     else:
         return 'Password error.'
+
 
 @app.get("/delete_msg", tags=['GOCQ接口'])
-async def webDeleteMsg(pswd:str, uuid:str, message_id:str):
+async def webDeleteMsg(pswd: str, uuid: str, message_id: str):
     """撤回消息"""
     if pswd == utils.getPswd(uuid):
-        Handler.CallApi('delete_msg', {'message_id':message_id}, uuid)
+        Handler.CallApi('delete_msg', {'message_id': message_id}, uuid)
         return 'OK.'
     else:
         return 'Password error.'
 
+
 @app.get("/getMessage", tags=['GOCQ接口'])
-async def webGetMessage(uuid:str, message_id:int):
+async def webGetMessage(uuid: str, message_id: int):
     """获取消息"""
     try:
-        return Handler.CallApi('get_msg', {'message_id':message_id}, uuid)
+        return Handler.CallApi('get_msg', {'message_id': message_id}, uuid)
     except Exception:
         return traceback.format_exc()
+
 
 @app.get("/getForwardMessage", tags=['GOCQ接口'])
-async def webGetForwardMessage(uuid:str, message_id:str):
+async def webGetForwardMessage(uuid: str, message_id: str):
     """获取合并转发消息"""
     try:
-        return Handler.CallApi('get_forward_msg', {'message_id':message_id}, uuid)
+        return Handler.CallApi('get_forward_msg', {'message_id': message_id}, uuid)
     except Exception:
         return traceback.format_exc()
 
+
 @app.get("/getGroupHistory", tags=['GOCQ接口'])
-async def webGetGroupHistory(uuid:str, group_id:int, message_seq:int=0):
+async def webGetGroupHistory(uuid: str, group_id: int, message_seq: int = 0):
     """获取群聊聊天记录"""
     try:
-        return Handler.CallApi('get_group_msg_history', {'group_id':group_id}, uuid) if message_seq == 0 else Handler.CallApi('get_group_msg_history', {'group_id':group_id, "message_seq":message_seq}, uuid)
+        return Handler.CallApi('get_group_msg_history', {'group_id': group_id},
+                               uuid) if message_seq == 0 else Handler.CallApi('get_group_msg_history',
+                                                                              {'group_id': group_id,
+                                                                               "message_seq": message_seq}, uuid)
     except Exception:
         return traceback.format_exc()
+
 
 @app.get("/sendMessage", tags=['GOCQ接口'])
 @app.post("/sendMessage", tags=['GOCQ接口'])
-async def webSendMessage(pswd:str, uuid:str, uid:int, gid:int, message:str):
+async def webSendMessage(pswd: str, uuid: str, uid: int, gid: int, message: str):
     """发送消息"""
     if pswd == utils.getPswd(uuid):
         Handler.send(uuid, uid, message, gid)
         return 'OK.'
     else:
         return 'Password error.'
-        
+
+
 @app.get("/callApi", tags=['GOCQ接口'])
 @app.post("/callApi", tags=['GOCQ接口'])
-async def webCallApi(uuid:str, name:str, pswd:str, params={}):
+async def webCallApi(uuid: str, name: str, pswd: str, params={}):
     """发送消息"""
     return Handler.CallApi(name, json.loads(params), uuid) if pswd == utils.getPswd(uuid) else 'Password error.'
 
+
 @app.get("/getGroupList", tags=['GOCQ接口'])
-async def getGroupList(uuid:str):
+async def getGroupList(uuid: str):
     """获取某机器人群聊列表"""
     return Handler.CallApi('get_group_list', {}, uuid)
-    
+
+
 @app.get("/getGroupDe", tags=['GOCQ接口'])
 @limiter.limit("1/minute")
-async def webgetGroupDe(uuid:str, request: Request):
+async def webgetGroupDe(uuid: str, request: Request):
     """
     获取某机器人群聊列表加最新一条消息
     频率限制6次每分钟
@@ -301,44 +335,52 @@ async def webgetGroupDe(uuid:str, request: Request):
     try:
         dataList = Handler.CallApi('get_group_list', {}, uuid)['data']
         for i in dataList:
-            messages = Handler.CallApi('get_group_msg_history', {'group_id':i.get("group_id")}, uuid).get("data").get("messages")
+            messages = Handler.CallApi('get_group_msg_history', {'group_id': i.get("group_id")}, uuid).get("data").get(
+                "messages")
             message = messages[-1].get("message")
             i['message'] = message
         return dataList
     except Exception as e:
         return e
 
+
 @app.get("/MCServer", tags=['其他接口'])
-async def MCServer(msg:str, uuid:str, qn:int):
+async def MCServer(msg: str, uuid: str, qn: int):
     """MC服务器消息同步"""
     if msg != '' and '[Server] <' not in msg:
-        msg = '[CQ:face,id=151] 服务器消息：'+str(msg)
+        msg = '[CQ:face,id=151] 服务器消息：' + str(msg)
         Handler.send(uuid, None, msg, qn)
-    
+
     return '200 OK.'
+
 
 @app.get('/getPluginsData', tags=['其他接口'])
 async def webgetPluginsData():
     """刷新插件数据"""
     return Cache.get('pluginsData', [])
 
+
 @app.get('/getPluginByName', tags=['其他接口'])
 async def webgetPluginByName(name: str):
     """刷新插件数据"""
     cpl = Cache.get('commandPluginsList', {}).get(name)
     pmbn = Cache.get('pluginsMappedByName', {}).get(name)
-    return {'pluginData':pmbn, 'cmds':cpl}
+    return {'pluginData': pmbn, 'cmds': cpl}
+
 
 @app.get('/getGroupMemberList', tags=['GOCQ接口'])
-async def webGetGroupMemberList(uuid:str, gid:int):
+async def webGetGroupMemberList(uuid: str, gid: int):
     """获取群聊成员列表"""
-    return Handler.CallApi('get_group_member_list', {'group_id':gid}, uuid)
+    return Handler.CallApi('get_group_member_list', {'group_id': gid}, uuid)
+
 
 @app.get('/getGOCQConfig', tags=['其他接口', 'GOCQ接口'])
-async def webgetGOCQConfig(uin:int, host:str, port:int, uuid:str, secret:str, password:str="null", url:str="https://pbfpost.xzynb.top/1000/?uuid={0}"):
+async def webgetGOCQConfig(uin: int, host: str, port: int, uuid: str, secret: str, password: str = "null",
+                           url: str = "https://pbfpost.xzynb.top/1000/?uuid={0}"):
     '''生成GOCQ配置'''
     try:
-        gocqConfig = json.loads('{"account": {"uin": 123, "password": null, "encrypt": false, "status": 0, "relogin": {"delay": 3, "interval": 3, "max-times": 0}, "use-sso-address": true, "allow-temp-session": false}, "heartbeat": {"interval": -1}, "message": {"post-format": "string", "ignore-invalid-cqcode": false, "force-fragment": false, "fix-url": false, "proxy-rewrite": "", "report-self-message": false, "remove-reply-at": false, "extra-reply-data": false, "skip-mime-scan": false}, "output": {"log-level": "trace", "log-aging": 1, "log-force-new": true, "log-colorful": false, "debug": false}, "default-middlewares": {"access-token": "", "filter": "", "rate-limit": {"enabled": false, "frequency": 1, "bucket": 1}}, "database": {"leveldb": {"enable": true}, "cache": {"image": "data/image.db", "video": "data/video.db"}}, "servers": [{"http": {"host": "1.1.1.1", "port": 2222, "timeout": 10, "long-polling": {"enabled": false, "max-queue-size": 2000}, "middlewares": {"access-token": "", "filter": "", "rate-limit": {"enabled": false, "frequency": 1, "bucket": 1}}, "post": [{"url": "http://127.0.0.1:8000/", "secret": "123456", "max-retries": 0, "retries-interval": 0}]}}]}')
+        gocqConfig = json.loads(
+            '{"account": {"uin": 123, "password": null, "encrypt": false, "status": 0, "relogin": {"delay": 3, "interval": 3, "max-times": 0}, "use-sso-address": true, "allow-temp-session": false}, "heartbeat": {"interval": -1}, "message": {"post-format": "string", "ignore-invalid-cqcode": false, "force-fragment": false, "fix-url": false, "proxy-rewrite": "", "report-self-message": false, "remove-reply-at": false, "extra-reply-data": false, "skip-mime-scan": false}, "output": {"log-level": "trace", "log-aging": 1, "log-force-new": true, "log-colorful": false, "debug": false}, "default-middlewares": {"access-token": "", "filter": "", "rate-limit": {"enabled": false, "frequency": 1, "bucket": 1}}, "database": {"leveldb": {"enable": true}, "cache": {"image": "data/image.db", "video": "data/video.db"}}, "servers": [{"http": {"host": "1.1.1.1", "port": 2222, "timeout": 10, "long-polling": {"enabled": false, "max-queue-size": 2000}, "middlewares": {"access-token": "", "filter": "", "rate-limit": {"enabled": false, "frequency": 1, "bucket": 1}}, "post": [{"url": "http://127.0.0.1:8000/", "secret": "123456", "max-retries": 0, "retries-interval": 0}]}}]}')
         gocqConfig['account']['password'] = password
         gocqConfig['account']['uin'] = uin
         gocqConfig['servers'][0]['http']['host'] = host
@@ -355,10 +397,12 @@ async def webgetGOCQConfig(uin:int, host:str, port:int, uuid:str, secret:str, pa
     except Exception as e:
         return e
 
+
 @app.get("/reloadPlugins", tags=['其他接口'])
 async def webreloadPlugins():
     '''刷新插件及指令列表'''
     return Handler.reloadPlugins()
+
 
 """
 @app.get("/sendAll", tags=['其他接口', 'GOCQ接口'])
@@ -379,15 +423,17 @@ async def websendAll(pswd:str):
         return e
 """
 
-def serve(port):
+
+def serve(port: int):
     p('Loading plugins...')
     Handler.reloadPlugins(True)
     p('Plugins loaded.')
 
     uts.scheduler.start()
     p('Scheduler started.')
-    
+
     p(f'Running on {port}')
-    uvicorn.run(app="pbf.driver.Fastapi:app",  host='0.0.0.0', port=int(port), reload=True)
+    uvicorn.run(app="pbf.driver.Fastapi:app", host='0.0.0.0', port=int(port), reload=True)
+
 
 Handler.reloadPlugins()

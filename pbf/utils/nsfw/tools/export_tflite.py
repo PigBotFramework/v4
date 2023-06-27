@@ -1,12 +1,12 @@
+import argparse
 import os
 import sys
-import argparse
 
 import tensorflow as tf
 
 sys.path.append((os.path.normpath(
-                 os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              '..'))))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '..'))))
 
 from model import OpenNsfwModel, InputType
 

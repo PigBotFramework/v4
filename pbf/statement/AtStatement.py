@@ -1,5 +1,6 @@
 from . import Statement
 
+
 class AtStatement(Statement):
     cqtype: str = 'at'
     qq: int = None

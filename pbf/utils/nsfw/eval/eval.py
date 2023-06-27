@@ -1,6 +1,7 @@
-import sys
-import operator
 import argparse
+import operator
+import sys
+
 import numpy as np
 from scipy import stats
 
@@ -85,6 +86,7 @@ def main(argv):
     print()
     print('NSFW:')
     print(test(original_classifications[:, 1], other_classifications[:, 1]))
+
 
 if __name__ == "__main__":
     main(sys.argv)

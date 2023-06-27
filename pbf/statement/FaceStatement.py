@@ -1,5 +1,6 @@
 from . import Statement
 
+
 class FaceStatement(Statement):
     cqtype: str = 'face'
     id: int = None

@@ -1,10 +1,13 @@
 import math
+
 import numpy as np
 import tensorflow.compat.v1 as tf
+
 tf.disable_v2_behavior()
 from enum import Enum, unique
 
 tf.reset_default_graph()
+
 
 @unique
 class InputType(Enum):
@@ -110,6 +113,7 @@ class OpenNsfwModel:
 
     """Get weights for layer with given name
     """
+
     def __get_weights(self, layer_name, field_name):
         if not layer_name in self.weights:
             raise ValueError("No weights for layer named '{}' found"
@@ -124,6 +128,7 @@ class OpenNsfwModel:
 
     """Layer creation and weight initialization
     """
+
     def __fully_connected(self, name, inputs, num_outputs):
         return tf.layers.dense(
             inputs=inputs, units=num_outputs, name=name,
@@ -140,7 +145,7 @@ class OpenNsfwModel:
                 oh = inputs.get_shape().as_list()[1]
                 h = inputs.get_shape().as_list()[1]
 
-                p = int(math.floor(((oh - 1) * stride + kernel_size - h)//2))
+                p = int(math.floor(((oh - 1) * stride + kernel_size - h) // 2))
 
                 inputs = tf.pad(inputs,
                                 [[0, 0], [p, p], [p, p], [0, 0]],
@@ -174,6 +179,7 @@ class OpenNsfwModel:
 
     """ResNet blocks
     """
+
     def __conv_block(self, stage, block, inputs, filter_depths,
                      kernel_size=3, stride=2):
         filter_depth1, filter_depth2, filter_depth3 = filter_depths
@@ -181,7 +187,7 @@ class OpenNsfwModel:
         conv_name_base = "conv_stage{}_block{}_branch".format(stage, block)
         bn_name_base = "bn_stage{}_block{}_branch".format(stage, block)
         shortcut_name_post = "_stage{}_block{}_proj_shortcut" \
-                             .format(stage, block)
+            .format(stage, block)
 
         shortcut = self.__conv2d(
             name="conv{}".format(shortcut_name_post), stride=stride,

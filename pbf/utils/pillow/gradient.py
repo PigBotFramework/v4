@@ -1,8 +1,9 @@
+from typing import List, TYPE_CHECKING
+
 import numpy as np
 from PIL import Image
-from PIL.ImageColor import getrgb
 from PIL.Image import Image as IMG
-from typing import List, TYPE_CHECKING
+from PIL.ImageColor import getrgb
 
 if TYPE_CHECKING:
     from .types import ColorType, SizeType, XYType
@@ -58,7 +59,7 @@ class LinearGradient(Gradient):
         y1 = self.y1
         x01 = x1 - x0
         y01 = y1 - y0
-        d = x01**2 + y01**2
+        d = x01 ** 2 + y01 ** 2
         arr = np.zeros([h, w, 4], np.uint8)
         if len(self.color_stops) == 1:
             arr[:, :, :] = self.color_stops[0].color

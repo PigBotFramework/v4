@@ -1,22 +1,20 @@
 #!/usr/bin/env python
-import sys
-import argparse
 import tensorflow.compat.v1 as tf
+
 tf.disable_v2_behavior()
 tf.reset_default_graph()
-
 
 from .model import OpenNsfwModel, InputType
 from .image_utils import create_tensorflow_image_loader, create_yahoo_image_loader
 
 import numpy as np
 
-
 IMAGE_LOADER_TENSORFLOW = "tensorflow"
 IMAGE_LOADER_YAHOO = "yahoo"
 
 
-def main(input_file, model_weights=r"./nsfw/data/open_nsfw-weights.npy", input_type="tensor", image_loader=IMAGE_LOADER_YAHOO):
+def main(input_file, model_weights=r"./nsfw/data/open_nsfw-weights.npy", input_type="tensor",
+         image_loader=IMAGE_LOADER_YAHOO):
     model = OpenNsfwModel()
 
     with tf.compat.v1.Session() as sess:
@@ -49,4 +47,3 @@ def main(input_file, model_weights=r"./nsfw/data/open_nsfw-weights.npy", input_t
         predictionsDict["sfw"] = predictions[0][0]
         predictionsDict["nsfw"] = predictions[0][1]
         return predictionsDict
-

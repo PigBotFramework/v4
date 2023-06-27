@@ -1,14 +1,14 @@
+import argparse
 import os
 import sys
-import argparse
 
 import tensorflow as tf
 from tensorflow.python.tools import freeze_graph
 from tensorflow.python.tools import optimize_for_inference_lib
 
 sys.path.append((os.path.normpath(
-                 os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              '..'))))
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '..'))))
 
 from model import OpenNsfwModel, InputType
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     export_base_path = args.target
     do_freeze = args.freeze
     do_optimize = args.optimize
-    as_binary =  not args.text
+    as_binary = not args.text
     input_type = InputType[args.input_type.upper()]
 
     input_node_name = 'input'
@@ -109,7 +109,7 @@ if __name__ == "__main__":
                 data = f.read()
                 input_graph_def.ParseFromString(data)
 
-                output_graph_def =\
+                output_graph_def = \
                     optimize_for_inference_lib.optimize_for_inference(
                         input_graph_def,
                         [input_node_name],

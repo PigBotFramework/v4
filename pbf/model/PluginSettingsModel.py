@@ -1,5 +1,7 @@
-from . import DictModel
 import time
+
+from . import DictModel
+
 
 class PluginSettingsModel(DictModel):
     db_table = 'plugin_settings'
@@ -8,11 +10,15 @@ class PluginSettingsModel(DictModel):
 
     def id(self):
         return 'int(11) NOT NULL AUTO_INCREMENT'
+
     def package_name(self):
         return 'varchar(255) NOT NULL'
+
     def key(self):
         return 'varchar(255) NOT NULL'
+
     def value(self):
         return 'varchar(1000)'
+
     def time(self):
         return ('int(11)', time.time())

@@ -1,5 +1,6 @@
 from . import Mysql
 
+
 def set(key: str, value):
     '''
     Set or replace the key.
@@ -7,12 +8,14 @@ def set(key: str, value):
     '''
     cacheList[key] = value
 
-def get(key: str, default = None):
+
+def get(key: str, default=None):
     '''
     Get the key value.
     Returns: key value or None
     '''
     return cacheList.get(key, default)
+
 
 def delete(key: str):
     '''
@@ -23,6 +26,7 @@ def delete(key: str):
     cacheList.pop(key)
     return value
 
+
 def check(key: str):
     '''
     Check if the key exists.
@@ -30,17 +34,20 @@ def check(key: str):
     '''
     return key in cacheList
 
+
 def connectSql(key: str, sql: str, mapFunc, arg: str = None):
     '''
     Connect Sql Select Statement with Cache Item
     '''
     res = mapFunc(Mysql.selectx(sql), arg)
     set(key, res)
-    sqlStr[key] = {'sql':sql,'mapFunc':mapFunc,'arg':arg}
+    sqlStr[key] = {'sql': sql, 'mapFunc': mapFunc, 'arg': arg}
+
 
 def disconnectSql(key: str):
     if sqlStr.get(key) != None:
         del sqlStr[key]
+
 
 def refreshFromSql(_key: str = None):
     for key, value in sqlStr.items():
@@ -48,7 +55,8 @@ def refreshFromSql(_key: str = None):
             func = value.get('mapFunc')
             print('cache refreshFromSql', key, value.get('sql'), value.get('arg'))
             set(key, func(Mysql.selectx(value.get('sql')), value.get('arg')))
-        
+
+
 def getSql(key: str):
     return sqlStr.get(key, {}).get('sql')
 

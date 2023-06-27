@@ -29,7 +29,7 @@ def create_yahoo_image_loader(expand_dims=True):
         fh_im.seek(0)
 
         image = (skimage.img_as_float(skimage.io.imread(fh_im, as_gray=False))
-                        .astype(np.float32))
+                 .astype(np.float32))
 
         H, W, _ = image.shape
         h, w = (224, 224)

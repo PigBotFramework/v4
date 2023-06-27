@@ -1,12 +1,15 @@
-from .PbfStruct import yamldata
 import pymysql
+
+from .Data import yamldata
 
 sql_config = "SELECT * FROM `botSettings` WHERE `uuid` = %s and {}"
 sql_coinlist = "SELECT * FROM `botCoin` WHERE `uuid` = %s and {}"
 sql_quanjing = "SELECT * FROM `botQuanping` WHERE {}"
 sql_keywordListSql = "SELECT * FROM `botKeyword` WHERE `uuid` = %s and `state`=0"
 
-def selectx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user=yamldata.get('database').get('dbuser'), password=yamldata.get('database').get('dbpassword'), database=yamldata.get('database').get('dbname')):
+
+def selectx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user=yamldata.get('database').get('dbuser'),
+            password=yamldata.get('database').get('dbpassword'), database=yamldata.get('database').get('dbname')):
     conn = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
     try:
@@ -19,7 +22,9 @@ def selectx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user
     conn.close()
     return result
 
-def commonx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user=yamldata.get('database').get('dbuser'), password=yamldata.get('database').get('dbpassword'), database=yamldata.get('database').get('dbname')):
+
+def commonx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user=yamldata.get('database').get('dbuser'),
+            password=yamldata.get('database').get('dbpassword'), database=yamldata.get('database').get('dbname')):
     connect = pymysql.connect(host=host, user=user, password=password, database=database)
     cursor = connect.cursor(cursor=pymysql.cursors.DictCursor)
     try:
@@ -31,6 +36,7 @@ def commonx(sqlstr, params=(), host=yamldata.get('database').get('dbhost'), user
     cursor.close()
     connect.close()
 
+
 def getConfig(uuid, key, value, template, sql=None):
     if sql == None:
         sql = '`{0}`=%s'.format(key)
@@ -39,5 +45,5 @@ def getConfig(uuid, key, value, template, sql=None):
     else:
         template = template.format(sql)
         ob = selectx(template, (uuid)) if uuid else selectx(template)
-    
+
     return None if not ob else ob
