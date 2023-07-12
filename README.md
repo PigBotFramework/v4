@@ -88,5 +88,6 @@ PBFv4将采用`MSC（Model-Statement-Controller）`模式编写插件，与`MVC`
 
 # 仓库信息
 - GitHub仓库：[PigBotFramework/v4](https://github.com/PigBotFramework/v4)  
+- DockerHub：[pig_bot_framework](https://hub.docker.com/r/gingmzmzx/pig_bot_framework)
 - PyPi Project：[PigBotFramework](https://pypi.org/project/PigBotFramework/)
   在您的设备上执行`pip install --upgrade PigBotFramework`即可安装，在任意文件中即可导入`import pbf`

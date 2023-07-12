@@ -82,7 +82,7 @@ def reloadPlugins(flag: bool = False):
             module = getattr(module, i)
             globals()['pluginsPath'] = i
 
-            with module():
+            with module(Struct()):
                 pass
 
             for l in dir(module):
