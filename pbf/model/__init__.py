@@ -532,27 +532,3 @@ class ListModel(ModelBase):
     def __delete(self):
         for i in self.format_delete:
             Mysql.commonx(self.sql_delete.format(self._getTableName(), i[0]), tuple(i[1]))
-
-
-# ============= DEBUG =============
-class TestListModel(ListModel):
-    db_table = "list_test"
-
-    def id(self):
-        return 'int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY'
-
-    def name(self):
-        return ('varchar(255) DEFAULT "PBF"', 'PBF')
-
-    def age(self):
-        return ('int(3) DEFAULT "16"', 16)
-
-
-if __name__ == '__main__':
-    model: TestListModel = TestListModel()
-    print(model.cache)
-    model._set({"age": 16}, name="azaz")
-    print(model.cache)
-    model._insert(name='abababab')
-    print(model._get(name='abababab'))
-    print(model.cache)
