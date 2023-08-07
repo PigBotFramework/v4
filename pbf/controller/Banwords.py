@@ -36,14 +36,6 @@ class BanWords:
         if i != False:
             client = Client(self.data)
 
-            if weijinFlag == True and gid != None and self.data.se.get("sender").get("role") == "member":
-                print('wssb')
-                client.msg().raw(
-                    '[CQ:face,id=151] [CQ:at,qq={2}] {0}不喜欢您使用（{1}）这种词语哦，请换一种表达方式吧！'.format(
-                        self.data.botSettings._get('name'), i, self.data.se.get("user_id")))
-                self.utils.coin.remove()
-                client.CallApi('delete_msg', {'message_id': self.data.se.get('message_id')})
-
             # 如果辱骂机器人则骂回去
             if ('[CQ:at,qq=' + str(self.data.botSettings._get('myselfqn')) + ']' in messageReplace) or (
                     self.data.botSettings._get('name') in messageReplace) or ('猪比' in messageReplace) or (
@@ -60,6 +52,13 @@ class BanWords:
                         replymsg = dataa.text
                     client.msg().raw(replymsg)
                     repeatnum -= 1
+
+            elif weijinFlag == True and gid != None and self.data.se.get("sender").get("role") == "member":
+                client.msg().raw(
+                    '[CQ:face,id=151] [CQ:at,qq={2}] {0}不喜欢您使用（{1}）这种词语哦，请换一种表达方式吧！'.format(
+                        self.data.botSettings._get('name'), i, self.data.se.get("user_id")))
+                self.utils.coin.remove()
+                client.CallApi('delete_msg', {'message_id': self.data.se.get('message_id')})
 
             # break 
             return True

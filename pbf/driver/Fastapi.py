@@ -103,7 +103,7 @@ async def post_data(request: Request, X_Signature: Union[str, None] = Header(def
             received_sig = X_Signature[len('sha1='):] if X_Signature else False
         if sig == received_sig:
             se = await request.json()
-            p(f'Recv: {se}')
+            p(f'Recv: {se.get("sender", {}).get("nickname")}({se.get("user_id")}): {se.get("raw_message")}')
             # botIns.CrashReport(se, params.get("uuid"))
             Handler.requestInit(se, params.get("uuid"))
         else:

@@ -6,6 +6,7 @@ from urllib.request import urlopen
 import requests
 
 from .PbfStruct import Struct
+from .Logger import Logger
 from ..model.BotSettingsModel import BotSettingsModel
 from ..statement.AtStatement import AtStatement
 from ..statement.ImageStatement import ImageStatement
@@ -54,18 +55,24 @@ class Msg(Client):
 
     def getParams(self, content: list = None) -> list:
         content: list = content if content != None else self.content
+        settings = self.data.groupSettings
 
         arr: list = []
         for i in content:
             try:
-                if type(i) == str:
-                    i = TextStatement(i)
+                if i == None:
+                    continue
+                if getattr(i, 'statementFlag', True):
+                    i = TextStatement(str(i))
+                if self.translateFlag and settings._get('translateLang') not in [None, "", "zh-cn"] and isinstance(i, TextStatement):
+                    i.trans(settings._get('translateLang'))
                 arr.append(i.get())
             except Exception:
                 pass
         return arr
 
     def raw(self, content: str, retryFlag=True):
+        content = str(content)
         if 'face54' in content:
             content = content.replace('face54', '[CQ:face,id=54]')
 
@@ -93,6 +100,9 @@ class Msg(Client):
     def custom(self, uid, gid=None, params=None, *content):
         if len(content) != 0:
             self.content += content
+
+        if params == None:
+            params = self.getParams(self.content)
 
         if gid == None:
             dataa = self.CallApi('send_msg', {'user_id': uid, 'message': params})

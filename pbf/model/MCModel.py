@@ -9,18 +9,18 @@ class MCModel(DictModel):
     def qn(self):
         return 'bigint(20) NOT NULL'
     def name(self):
-        return 'varchar(255) NOT NULL'
+        return 'varchar(255)'
     def backpack(self):
-        return 'longtext NOT NULL'
+        return 'longtext'
     def life(self):
-        return 'int(11) NOT NULL', 20
+        return 'int(11)', 20
     def hungry(self):
-        return 'int(11) NOT NULL', 20
+        return 'int(11)', 20
     def achievement(self):
-        return 'longtext NOT NULL'
+        return 'longtext'
     def xp(self):
-        return 'int(11) NOT NULL'
+        return 'int(11)'
     def doing(self):
-        return 'varchar(255) NOT NULL'
+        return 'varchar(255)'
     def doingutill(self):
-        return 'int(11) NOT NULL'
+        return 'int(11)'

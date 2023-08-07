@@ -1,5 +1,6 @@
 class Statement:
     cqtype: str = None
+    statementFlag: bool = False
 
     def __init__(self, type, **kwargs) -> None:
         self.cqtype = type

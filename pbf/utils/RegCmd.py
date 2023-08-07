@@ -29,11 +29,11 @@ class RegCmd:
         def wrapper(*args, **kwargs):
             if not Handler.pluginsLoading:
                 return func(*args, **kwargs)
+                
+            pwd = Handler.pluginsPath
+            self.function = f'{pwd}@{Handler.methodName}'
 
             if self.type == 'command':
-                pwd = Handler.pluginsPath
-                self.function = f'{pwd}@{Handler.methodName}'
-
                 if Handler.commandPluginsList.get(pwd) == None:
                     Handler.commandPluginsList[pwd] = []
                 Handler.commandPluginsList[pwd].append(self)

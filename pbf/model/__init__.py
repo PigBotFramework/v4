@@ -2,6 +2,7 @@ try:
     from functools import partialmethod
     from ..controller import Cache, Mysql
 except Exception:
+    # Debug
     import sys
 
     sys.path.append(".")
@@ -378,11 +379,13 @@ class ListModel(ModelBase):
         for i in self.cache:
             flag = True
             for k, v in where.items():
-                if i.get(k) is not v:
+                if i.get(k) != type(i.get(k))(v):
                     flag = False
                     break
             if flag is False:
                 continue
+
+            print("_set", i, kwargs)
 
             for k, v in kwargs.items():
                 i[k] = v
@@ -399,7 +402,7 @@ class ListModel(ModelBase):
         for i in self.cache:
             flag = True
             for k, v in where.items():
-                if i.get(k) is not v:
+                if i.get(k) != type(i.get(k))(v):
                     flag = False
                     break
             if flag is True:
@@ -413,13 +416,14 @@ class ListModel(ModelBase):
         for i in self.cache:
             flag = True
             for k, v in where.items():
-                if i.get(k) is not v:
+                if i.get(k) != type(i.get(k))(v):
                     flag = False
                     break
             if flag is True:
                 self.format_delete.append(self._refreshWhereCase(**where))
 
                 self.cache.remove(i)
+                Cache.cacheList[self._c()].remove(i)
                 return i
         return dict()
 

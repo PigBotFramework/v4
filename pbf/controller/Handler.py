@@ -116,8 +116,10 @@ def reloadPlugins(flag: bool = False):
 
 
 def openFile(path):
+    ret = str()
     with open(path, 'r') as f:
-        return f.read()
+        ret = f.read()
+    return ret
 
 
 def CallApi(api, parms, uuid=None, httpurl=None, access_token=None, ob=None, timeout=10):

@@ -6,12 +6,16 @@ class TextStatement(Statement):
     cqtype: str = 'text'
     text: str = ''
     insertStrFlag: bool = False
+    transFlag: bool = True
+    enterFlag: bool = False
 
-    def __init__(self, text: str, enterFlag=False, insertStrFlag=False) -> None:
+    def __init__(self, text: str, enterFlag=False, insertStrFlag=False, transFlag=True) -> None:
         self.text = text
         if enterFlag:
             self.text += '\n'
+            self.enterFlag = True
         self.insertStrFlag = insertStrFlag
+        self.transFlag = transFlag
         if insertStrFlag:
             self.process()
 
@@ -20,6 +24,12 @@ class TextStatement(Statement):
         if self.insertStrFlag == True:
             self.text = Utils().insertStr(self.text)
         return self.text
+    
+    def trans(self, lang):
+         if self.transFlag:
+             self.text = Utils().translator(self.text, to_lang=lang)
+             if self.enterFlag and self.text.strip() != '':
+                 self.text += '\n'
 
     def __str__(self):
         return self.text

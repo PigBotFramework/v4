@@ -27,7 +27,7 @@ class Menu:
             if cmds == None:
                 continue
             for cmd in cmds:
-                if cmd.mode not in commandModedList:
+                if cmd.mode not in commandModedList and cmd.hidden != 1:
                     commandModedList.append(cmd.mode)
 
         return commandModedList
@@ -43,10 +43,10 @@ class Menu:
         for i in menuList:
             if myIter == 0:
                 messageList.append(FaceStatement(54))
-                messageList.append(TextStatement(i))
+                messageList.append(TextStatement(i, transFlag=False))
                 myIter += 1
             else:
-                messageList.append(TextStatement(f'  {i}'))
+                messageList.append(TextStatement(f'  {i}', transFlag=False))
                 messageList.append(FaceStatement(54))
                 messageList.append(TextStatement(' ', 1))
                 myIter = 0
@@ -55,7 +55,7 @@ class Menu:
         if myIter == 1:
             messageList.append(TextStatement(' ', 1))
         messageList.append(
-            TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name'))))
+            TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name')), transFlag=False))
 
         msg = self.client.msg(messageList)
         # msg.debug()
@@ -74,7 +74,7 @@ class Menu:
         for i in commandList:
             if i.hidden == 0:
                 messageList.append(FaceStatement(54))
-                messageList.append(TextStatement(f'{i.name}', 1))
+                messageList.append(TextStatement(f'{i.name}', 1, transFlag=False))
                 messageList.append(TextStatement(f'用法：{i.usage}', 1))
                 messageList.append(TextStatement(f'解释：{i.description}', 1))
 
@@ -95,7 +95,7 @@ class Menu:
         messageList.append(TextStatement(' ', 1))
         messageList.append(TextStatement('解锁更多功能请机器人主人安装其他插件', 1))
         messageList.append(
-            TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name'))))
+            TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name')), transFlag=False))
 
         msg = self.client.msg(messageList)
         # msg.debug()

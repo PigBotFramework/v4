@@ -2,14 +2,14 @@ import hmac
 import math
 import random
 
-# from googletrans import Translator as googleTranslator
+from googletrans import Translator as googleTranslator
 
 from .CQCode import CQCode
 from .Coin import Coin
 from ..controller.PbfStruct import Struct
 from ..model.BotSettingsModel import BotSettingsModel
 
-# googleTranslatorIns = googleTranslator()
+googleTranslatorIns = googleTranslator()
 
 from apscheduler.schedulers.background import BackgroundScheduler
 

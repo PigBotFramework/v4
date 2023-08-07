@@ -19,7 +19,7 @@ class BanWordsModel(ListModel):
         return 'int(11) NOT NULL DEFAULT "0"'
 
     def qn(self):
-        return 'bigint(20) DEFAULT "0"'
+        return 'bigint(20) NOT NULL DEFAULT "0"'
 
     def uuid(self):
         return 'varchar(255) NOT NULL'
