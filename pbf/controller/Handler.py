@@ -2,7 +2,7 @@ import importlib
 import json
 import os
 import traceback
-
+import copy
 import requests
 
 from . import Cache
@@ -58,6 +58,19 @@ def reloadPlugins(flag: bool = False):
     # 清空已有缓存
     Cache.cacheList = {}
     Cache.sqlStr = {}
+    globals()['noticeListenerList'] = []
+    globals()['requestListenerList'] = []
+    globals()['metaListenerList'] = []
+    globals()['messageListenerList'] = []
+    globals()['commandListenerList'] = []  # 后续的菜单都是遍历该数组生成
+    globals()['pluginsData'] = []
+    globals()['commandPluginsList'] = {}  # 后续的指令下发都是遍历该数组
+    globals()['commandModedList'] = {}  # 分类为索引，获取到某分类下的指令
+    globals()['pluginsList'] = getPluginsList(plugins_path, plugins_path_name)
+    globals()['pluginsMappedByName'] = {}
+    globals()['pluginsLoading'] = False
+    globals()['pluginsPath'] = None
+    globals()['methodName'] = None
 
     # Load Plugins
     globals()['pluginsLoading'] = True
@@ -136,7 +149,7 @@ def CallApi(api, parms, uuid=None, httpurl=None, access_token=None, ob=None, tim
         ob = BotSettingsModel(uuid=uuid)
         httpurl = ob._get("httpurl")
         access_token = ob._get("secret")
-
+    
     data = requests.post(url='{0}/{1}?access_token={2}'.format(httpurl, api, access_token), json=parms, timeout=timeout)
     return data.json()
 
@@ -178,7 +191,7 @@ def requestInit(se: dict, uuid: str):
         userCoin = -1
         isGlobalBanned = None
 
-    pluginsList = json.loads(BotPluginsModel(uuid=uuid)._get('data', default="[]"))
+    pluginsList = BotPluginsModel()._get(uuid=uuid)
 
     struct = Struct(
         args=args,
@@ -236,23 +249,23 @@ def requestInit(se: dict, uuid: str):
     if se.get('post_type') == 'notice':
         # 群通知
         for i in Cache.get('noticeListenerList', []):
-            pbf.checkPromiseAndRun(i)
+            copy.deepcopy(pbf).checkPromiseAndRun(i)
         return
 
     elif se.get('post_type') == 'request':
         # 请求
         for i in Cache.get('requestListenerList', []):
-            pbf.checkPromiseAndRun(i)
+            copy.deepcopy(pbf).checkPromiseAndRun(i)
         return
 
     elif se.get('post_type') == 'meta_event':
         for i in Cache.get('metaListenerList', []):
-            pbf.checkPromiseAndRun(i)
+            copy.deepcopy(pbf).checkPromiseAndRun(i)
         return
 
     else:
         for i in Cache.get('messageListenerList', []):
-            pbf.checkPromiseAndRun(i)
+            copy.deepcopy(pbf).checkPromiseAndRun(i)
 
         commandPluginsList = Cache.get('commandPluginsList')
 
@@ -267,8 +280,8 @@ def requestInit(se: dict, uuid: str):
                 datajson = dataa.get('data').get('texts')
                 for i in datajson:
                     message += i.get('text')
-        except Exception:
-            pass
+        except Exception as e:
+            pbf.logger.warn(e, 'ocr_image')
 
         # 指令监听器
         commandListener = CommandListener(struct)

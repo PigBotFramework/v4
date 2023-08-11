@@ -18,7 +18,7 @@ class Menu:
 
     def getModedMenu(self):
         pluginsList = Cache.get('commandPluginsList')
-        botPluginsList = json.loads(BotPluginsModel(uuid=self.data.uuid)._get('data', default="[]"))
+        botPluginsList = BotPluginsModel()._get(uuid=self.data.uuid)
         botPluginsList = botPluginsList if botPluginsList is not None else []
         commandModedList = []
 
