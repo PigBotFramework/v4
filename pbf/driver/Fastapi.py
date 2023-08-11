@@ -349,9 +349,6 @@ async def webgetGroupDe(uuid: str, request: Request):
 async def MCServer(msg: str, uuid: str, qn: int):
     """MC服务器消息同步"""
     if msg != '' and '[Server] <' not in msg:
-        p(msg)
-        p(uuid)
-        p(qn)
         Handler.send(uuid, None, str(msg), qn)
 
     return '200 OK.'
