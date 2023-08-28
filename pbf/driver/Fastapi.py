@@ -376,7 +376,7 @@ async def webGetGroupMemberList(uuid: str, gid: int):
 
 @app.get('/getGOCQConfig', tags=['其他接口', 'GOCQ接口'])
 async def webgetGOCQConfig(uin: int, host: str, port: int, uuid: str, secret: str, password: str = "null",
-                           url: str = "https://pbfpost.xzynb.top/1000/?uuid={0}"):
+                           url: str = "https://pbfpost.xzynb.top/?uuid={0}"):
     '''生成GOCQ配置'''
     try:
         gocqConfig = json.loads(

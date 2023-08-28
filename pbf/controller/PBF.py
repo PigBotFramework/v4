@@ -63,7 +63,7 @@ class PBF:
 
     def installPackage(self, package: str):
         import pip
-        pip._internal.cli.main.main(['install', package])
+        pip.main(['install', package])
 
     def send(self, message):
         return self.client.msg().raw(message)
@@ -82,6 +82,7 @@ class PBF:
     def execPlugin(self, func):
         try:
             print(f'PBF Server: {func}')
+            self.changeRunningProgram(func)
             className, methodName = func.split('@')
 
             module = importlib.import_module(f'plugins.{className}')

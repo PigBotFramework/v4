@@ -385,8 +385,6 @@ class ListModel(ModelBase):
             if flag is False:
                 continue
 
-            print("_set", i, kwargs)
-
             for k, v in kwargs.items():
                 i[k] = v
 
