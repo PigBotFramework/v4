@@ -274,7 +274,7 @@ def requestInit(se: dict, uuid: str):
 
         try:
             cq = CQCode(message).get('file', type='image')
-            if len(cq) <= 0:
+            if len(cq) > 0:
                 dataa = client.CallApi('ocr_image', {'image': cq[0]})
                 message = ''
                 datajson = dataa.get('data').get('texts')
