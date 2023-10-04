@@ -26,10 +26,10 @@ class TextStatement(Statement):
         return self.text
     
     def trans(self, lang):
-         if self.transFlag:
-             self.text = Utils().translator(self.text, to_lang=lang)
-             if self.enterFlag and self.text.strip() != '':
-                 self.text += '\n'
+        if self.transFlag:
+            self.text = Utils().translator(self.text, to_lang=lang)
+            if self.enterFlag and self.text.strip() != '':
+                self.text += '\n'
 
     def __str__(self):
         return self.text

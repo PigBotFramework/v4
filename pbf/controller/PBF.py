@@ -2,6 +2,7 @@ import importlib
 import sys
 import threading
 import traceback
+import copy
 
 from . import Mysql, Cache
 from .Banwords import BanWords
@@ -86,7 +87,7 @@ class PBF:
             className, methodName = func.split('@')
 
             module = importlib.import_module(f'plugins.{className}')
-            instance = getattr(module, className)(self.data)
+            instance = getattr(module, className)(copy.deepcopy(self.data))
             return getattr(instance, methodName)()
         except Exception:
             self.logger.error(traceback.format_exc())

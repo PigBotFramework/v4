@@ -1,6 +1,7 @@
 import hmac
 import math
 import random
+import requests
 
 from googletrans import Translator as googleTranslator
 
@@ -8,8 +9,6 @@ from .CQCode import CQCode
 from .Coin import Coin
 from ..controller.PbfStruct import Struct
 from ..model.BotSettingsModel import BotSettingsModel
-
-googleTranslatorIns = googleTranslator()
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -21,9 +20,27 @@ class Utils:
     data: Struct = None
 
     def __init__(self, data: Struct = None):
+        self.googleTranslator = googleTranslator()
         if data != None:
             self.data = data
             self.coin = Coin(data)
+
+    def hitokoto(self, ret=False):
+        try:
+            from ..controller.Data import yamldata
+            data = requests.get(url=yamldata.get("yiyan", {}).get("api", "https://v1.hitokoto.cn/"), timeout=int(yamldata.get("yiyan", {}).get("timeout", 1))).json()
+            if ret:
+                return data
+            from ..statement.TextStatement import TextStatement
+            return [
+                TextStatement(data.get("hitokoto"), 1),
+                TextStatement("    ———— {}".format(data.get("from_who", "匿名")), 1),
+                TextStatement(' ', 1)
+            ]
+        except Exception:
+            if ret:
+                return {}
+            return []
 
     def insertStr(self, content):
         sendStr = 'abcdefghijklmnopqrstuvwxyz'
@@ -60,7 +77,7 @@ class Utils:
         if from_lang == to_lang or not text.lstrip().rstrip():
             return text
         try:
-            return googleTranslatorIns.translate(text, dest=to_lang).text
+            return self.googleTranslator.translate(text, dest=to_lang).text
         except Exception:
             return text
 

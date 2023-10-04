@@ -6,6 +6,7 @@ from .PbfStruct import Struct
 from ..model.BotPluginsModel import BotPluginsModel
 from ..statement.FaceStatement import FaceStatement
 from ..statement.TextStatement import TextStatement
+from ..utils import Utils
 
 
 class Menu:
@@ -34,10 +35,12 @@ class Menu:
 
     def sendModedMenu(self):
         menuList = self.getModedMenu()
+        # Header
         messageList = [
             FaceStatement(151),
             TextStatement(f'{self.data.botSettings._get("name")}-菜单', 1)
         ]
+        # Body
         myIter = 0
 
         for i in menuList:
@@ -54,6 +57,9 @@ class Menu:
         messageList.append(TextStatement(' ', 1))
         if myIter == 1:
             messageList.append(TextStatement(' ', 1))
+
+        # Footer
+        messageList += Utils(self.data).hitokoto()
         messageList.append(
             TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name')), transFlag=False))
 
@@ -66,11 +72,13 @@ class Menu:
         if commandList == None:
             raise Exception('Mode name not found')
 
+        # Header
         messageList = [
             FaceStatement(151),
             TextStatement(f'{self.data.botSettings._get("name")}-菜单：{mode}', 1)
         ]
 
+        # Body
         for i in commandList:
             if i.hidden == 0:
                 messageList.append(FaceStatement(54))
@@ -92,7 +100,9 @@ class Menu:
                 messageList.append(FaceStatement(54))
                 messageList.append(TextStatement(f'{i.usage}', 1))
 
+        # Footer
         messageList.append(TextStatement(' ', 1))
+        messageList += Utils(self.data).hitokoto()
         messageList.append(TextStatement('解锁更多功能请机器人主人安装其他插件', 1))
         messageList.append(
             TextStatement('[ {0} Powered By PigBotFramework ]'.format(self.data.botSettings._get('name')), transFlag=False))

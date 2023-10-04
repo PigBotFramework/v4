@@ -249,23 +249,24 @@ def requestInit(se: dict, uuid: str):
     if se.get('post_type') == 'notice':
         # 群通知
         for i in Cache.get('noticeListenerList', []):
-            copy.deepcopy(pbf).checkPromiseAndRun(i)
+            # copy.deepcopy(pbf).checkPromiseAndRun(i) # 用deepcopy会报TypeError: Cannot pickle '_thread.RLock' object
+            pbf.checkPromiseAndRun(i)
         return
 
     elif se.get('post_type') == 'request':
         # 请求
         for i in Cache.get('requestListenerList', []):
-            copy.deepcopy(pbf).checkPromiseAndRun(i)
+            pbf.checkPromiseAndRun(i)
         return
 
     elif se.get('post_type') == 'meta_event':
         for i in Cache.get('metaListenerList', []):
-            copy.deepcopy(pbf).checkPromiseAndRun(i)
+            pbf.checkPromiseAndRun(i)
         return
 
     else:
         for i in Cache.get('messageListenerList', []):
-            copy.deepcopy(pbf).checkPromiseAndRun(i)
+            pbf.checkPromiseAndRun(i)
 
         commandPluginsList = Cache.get('commandPluginsList')
 
