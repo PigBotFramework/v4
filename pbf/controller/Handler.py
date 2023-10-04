@@ -214,6 +214,7 @@ def requestInit(se: dict, uuid: str):
     menu = Menu(struct)
     p('Inited all vars.')
 
+    # 判断是否已开机且未被屏蔽
     if isGlobalBanned == None and se.get('group_id') != None:
         if not groupSettings._get("power", True):
             if message == '开机':
@@ -245,6 +246,17 @@ def requestInit(se: dict, uuid: str):
     p('Passed banned check')
 
     settings = groupSettings
+
+    # 严格安全模式
+    if botSettings._get("strict_security_mode"):
+        if settings != None:
+            weijinFlag = True if settings._get('weijinCheck') else False
+        else:
+            weijinFlag = True
+        if banwords.check(weijinFlag) == True:
+            p('[Strict Security Mode] Blocked.')
+            return 'OK.'
+        p('[Strict Security Mode] Passed.')
 
     if se.get('post_type') == 'notice':
         # 群通知

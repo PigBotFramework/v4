@@ -89,3 +89,6 @@ class BotSettingsModel(DictModel):
 
     def allowPM(self):
         return 'int(11) NOT NULL DEFAULT \'1\''
+    
+    def strict_security_mode(self):
+        return 'int(11) NOT NULL DEFAULT \'0\''
