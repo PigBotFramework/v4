@@ -157,27 +157,6 @@ async def webstatus():
     return json.dumps({"code": 200}, ensure_ascii=False)
 
 
-@app.post("/webhook", tags=['其他接口'])
-async def webhook(request: Request, X_Hub_Signature: Union[str, None] = Header(default=None)):
-    """
-    描述：WebHooks接口  
-    身份验证：header中的`X_Hub_Signature`  
-    用途：用于自动pull插件  
-    """
-    # github加密是将post提交的data和WebHooks的secret通过hmac的sha1加密，放到HTTP headers的X-Hub-Signature参数中
-    body = await request.json()
-    token = utils.encryption(body, '123456')
-    # 认证签名是否有效
-    signature = X_Hub_Signature.split('=')[-1]
-    if signature != token:
-        return "token认证无效", 401
-    data = json.loads(str(body, encoding="utf8"))
-    # 运行shell脚本，更新代码
-    os.system('./pull.sh {0} {1} {2}'.format(data.get('repository').get('name'), data.get('repository').get('url'),
-                                             data.get('repository').get('full_name')))
-    return {"status": 200}
-
-
 @app.get("/overview", tags=['GOCQ接口'])
 @app.post("/overview", tags=['GOCQ接口'])
 async def weboverview(uuid: str):
