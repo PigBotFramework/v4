@@ -27,6 +27,7 @@ class Utils:
 
     def hitokoto(self, ret=False):
         try:
+            raise Exception("hitokoto has been disabled.")
             from ..controller.Data import yamldata
             data = requests.get(url=yamldata.get("yiyan", {}).get("api", "https://v1.hitokoto.cn/"), timeout=int(yamldata.get("yiyan", {}).get("timeout", 1))).json()
             if ret:

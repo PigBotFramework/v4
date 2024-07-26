@@ -3,7 +3,7 @@ from . import Statement
 
 class FaceStatement(Statement):
     cqtype: str = 'face'
-    id: int = None
+    id: str = None
 
     def __init__(self, face: int) -> None:
-        self.id = face
+        self.id = str(face)
