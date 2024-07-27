@@ -55,7 +55,7 @@ class BanWords:
 
             elif weijinFlag == True and gid != None and self.data.se.get("sender").get("role") == "member":
                 client.msg().raw(
-                    '[CQ:face,id=151] [CQ:at,qq={2}] {0}不喜欢您使用（{1}）这种词语哦，请换一种表达方式吧！'.format(
+                    '[CQ:face,id=147] [CQ:at,qq={2}] {0}不喜欢您使用（{1}）这种词语哦，请换一种表达方式吧！'.format(
                         self.data.botSettings._get('name'), i, self.data.se.get("user_id")))
                 self.utils.coin.remove()
                 client.CallApi('delete_msg', {'message_id': self.data.se.get('message_id')})

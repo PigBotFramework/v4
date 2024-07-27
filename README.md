@@ -8,7 +8,7 @@
   ```python
   self.client.msg(
       TextStatement('我爱猪比'),
-      FaceStatement(151),
+      FaceStatement(147),
       ImageStatemant(file='abab'),
       Statement('poke', qq=3558267090)
   ).send()

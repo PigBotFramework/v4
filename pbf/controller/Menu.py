@@ -37,7 +37,7 @@ class Menu:
         menuList = self.getModedMenu()
         # Header
         messageList = [
-            FaceStatement(151),
+            FaceStatement(46),
             TextStatement(f'{self.data.botSettings._get("name")}-菜单', 1)
         ]
         # Body
@@ -45,12 +45,12 @@ class Menu:
 
         for i in menuList:
             if myIter == 0:
-                messageList.append(FaceStatement(54))
+                messageList.append(FaceStatement(147))
                 messageList.append(TextStatement(i, transFlag=False))
                 myIter += 1
             else:
                 messageList.append(TextStatement(f'  {i}', transFlag=False))
-                messageList.append(FaceStatement(54))
+                messageList.append(FaceStatement(147))
                 messageList.append(TextStatement(' ', 1))
                 myIter = 0
 
@@ -74,14 +74,14 @@ class Menu:
 
         # Header
         messageList = [
-            FaceStatement(151),
+            FaceStatement(46),
             TextStatement(f'{self.data.botSettings._get("name")}-菜单：{mode}', 1)
         ]
 
         # Body
         for i in commandList:
             if i.hidden == 0:
-                messageList.append(FaceStatement(54))
+                messageList.append(FaceStatement(147))
                 messageList.append(TextStatement(f'{i.name}', 1, transFlag=False))
                 messageList.append(TextStatement(f'用法：{i.usage}', 1))
                 messageList.append(TextStatement(f'解释：{i.description}', 1))
@@ -97,7 +97,7 @@ class Menu:
                     permission = '真正的主人'
                 messageList.append(TextStatement(f'权限：{permission}', 1))
             elif i.hidden == 2:
-                messageList.append(FaceStatement(54))
+                messageList.append(FaceStatement(147))
                 messageList.append(TextStatement(f'{i.usage}', 1))
 
         # Footer

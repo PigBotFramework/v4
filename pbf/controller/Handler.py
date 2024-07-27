@@ -226,7 +226,7 @@ def requestInit(se: dict, uuid: str):
                     ).send()
                 else:
                     client.msg(
-                        FaceStatement(151),
+                        FaceStatement(147),
                         TextStatement('就你？先拿到管理员再说吧！')
                     ).send()
             elif message:

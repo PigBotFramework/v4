@@ -74,7 +74,7 @@ class Msg(Client):
     def raw(self, content: str, retryFlag=True):
         content = str(content)
         if 'face54' in content:
-            content = content.replace('face54', '[CQ:face,id=54]')
+            content = content.replace('face54', '[CQ:face,id=147]')
 
         dataa = self.custom(self.data.se.get('user_id'), self.data.se.get('group_id'), content)
 

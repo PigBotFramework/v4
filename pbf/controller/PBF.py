@@ -130,7 +130,7 @@ class PBF:
                 return self.execPluginThread(evalFunc)
             elif echoFlag == True:
                 self.client.msg(
-                    FaceStatement(151),
+                    FaceStatement(147),
                     TextStatement('你不是我的主人，哼ꉂ(ˊᗜˋ*)')
                 ).send()
         elif promise == 'ro':
@@ -138,7 +138,7 @@ class PBF:
                 return self.execPluginThread(evalFunc)
             elif echoFlag == True:
                 self.client.msg(
-                    FaceStatement(151),
+                    FaceStatement(147),
                     TextStatement('你不是我真正的主人，哼ꉂ(ˊᗜˋ*)')
                 ).send()
         elif promise == 'xzy':
@@ -146,7 +146,7 @@ class PBF:
                 return self.execPluginThread(evalFunc)
             elif echoFlag == True:
                 self.client.msg(
-                    FaceStatement(151),
+                    FaceStatement(147),
                     TextStatement('该指令只有最高管理员可以使用！并且实例必须为官方默认实例')
                 ).send()
 
@@ -156,7 +156,7 @@ class PBF:
                     return self.execPluginThread(evalFunc)
                 elif echoFlag == True:
                     self.client.msg(
-                        FaceStatement(151),
+                        FaceStatement(147),
                         TextStatement('就你？先拿到管理员再说吧！')
                     ).send()
             elif promise == 'ao':
@@ -165,7 +165,7 @@ class PBF:
                     return self.execPluginThread(evalFunc)
                 elif echoFlag == True:
                     self.client.msg(
-                        FaceStatement(151),
+                        FaceStatement(147),
                         TextStatement('就你？先拿到管理员再说吧！')
                     ).send()
 
