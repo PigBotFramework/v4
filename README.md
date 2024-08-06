@@ -1,5 +1,4 @@
-# 新版本预告： 
-**PBFv4即将崭新推出**  
+# 请移步至v5: [PBF Next](https://github.com/PigBotFramework/next)
   
 ## PBFv4新特性：
 - 重新引入了类似于PBFv2的缓存方案，将需要频繁读写的数据缓存到内存中，由Python维护一个字典
