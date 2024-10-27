@@ -20,7 +20,7 @@ class ModelBase:
     sql_whereList: list = []
 
     db_table: str = None
-    db_perfix: str = "bot_"
+    db_prefix: str = "bot_"
     col: list = []
 
     format_insert: list = []
@@ -31,7 +31,7 @@ class ModelBase:
         return f'<pbf.model.ModelBase {self.db_table}>'
 
     def _getTableName(self):
-        return self.db_perfix + self.db_table
+        return self.db_prefix + self.db_table
 
     def _c(self):
         return "db_" + self._getTableName()
